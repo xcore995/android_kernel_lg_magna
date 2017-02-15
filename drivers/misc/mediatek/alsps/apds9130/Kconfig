@@ -1,0 +1,4 @@
+
+config MTK_APDS9130
+	bool "APDS9130 for MediaTek package"
+	default n

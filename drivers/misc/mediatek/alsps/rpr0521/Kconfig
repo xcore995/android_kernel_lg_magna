@@ -1,0 +1,4 @@
+
+config ROHM_RPR0521
+	bool "RPR0521 for MediaTek package"
+	default n

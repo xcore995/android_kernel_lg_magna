@@ -1,0 +1,4 @@
+
+config BOSCH_BMA255
+	bool "BMA255 for MediaTek package"
+	default n

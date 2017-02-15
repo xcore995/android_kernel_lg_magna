@@ -1,0 +1,4 @@
+
+config MTK_K303B_ACC
+	bool "K303B-ACC for MediaTek package"
+	default n

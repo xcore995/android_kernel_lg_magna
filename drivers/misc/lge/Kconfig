@@ -1,0 +1,180 @@
+comment "LG Electronics Board Support Package"
+
+config MACH_LGE
+	bool
+	default n
+
+menu "LGE Board Selection"
+
+config MACH_MT6752
+	depends on ARCH_MT6752
+	select MACH_LGE
+	bool "MT6752"
+	help
+		Support for the MTK MT6752 device.
+
+config MACH_MT6582
+	depends on ARCH_MT6582
+	select MACH_LGE
+	bool "MT6582"
+	help
+		Support for the MTK MT6582 device.
+
+config MACH_MT6592
+	depends on ARCH_MT6592
+	select MACH_LGE
+	bool "MT6592"
+	help
+		Support for the MTK MT6592 device.
+
+endmenu
+
+menu "LGE Specific Patches"
+
+config LGE_BOOTLOADER_LOG
+	depends on MACH_LGE
+	bool "Support LGE bootloader log"
+	default n
+	help
+	        LGE bootloader log
+
+config DEBUG_USER_INIT
+	depends on DEBUG_USER
+	bool "Print debug messages for init process only"
+	default n
+	help
+	        Print the init process debug message only.
+
+config LGE_USE_SEPERATE_GAIN
+	depends on MACH_LGE
+	bool "LGE_USER_SERPERATE_GAIN"
+	default n
+	help
+		Setting Gain1, Gain2 seperately
+
+config LGE_CABLE_ID_DETECT
+	tristate "LGE CABLE TYPE DETECT"
+	depends on LGE_PM
+	default n
+	help
+		This feature is used for detecting cable resistance
+
+config LGE_LUT_KCAL
+	bool "lge LUT Kcal"
+	default n
+
+config LGE_HANDLE_PANIC
+	bool "LG Kernel Crash Handler"
+	default n
+	help
+		Set LG Kernel Crash Handler
+
+config LGE_HIDDEN_RESET
+	bool "LG Hidden Reset Feature"
+	default n
+	help
+		Set LG Hidden Reset
+config LGE_LCD_DYNAMIC_LOG
+	bool "LCD debugging - enable logs through adb"
+	default n
+	help
+		If you say Y here, developers can enable/disable mmc logs through adb
+		by accessing /sys/module/mmc_core/parameters/debug_level
+		ex. echo {debug_level} > /sys/module/mtkfb/parameters/debug_level
+
+config LGE_KSWITCH
+	tristate "Support LGE Kill Switch"
+	default n
+	depends on MACH_LGE
+	help
+		LGE Kill Switch
+
+config PRE_SELF_DIAGNOSIS
+	tristate "Support LGE self diagnosis for factory"
+	default n
+	depends on MACH_LGE
+	help
+
+menuconfig LGE_PM
+	depends on MACH_LGE
+	bool "LGE_PM Features"
+	default	n
+	help
+		Say y here to support LGE Power Management Feature.
+		LGP_PM releated changed.
+		Power Management, Battery Charging, Fuel Gauge, Thermal and ETC.
+
+if LGE_PM
+
+config LGE_PM_CHARGING_SCENARIO
+	bool "LGE_PM Support OTP Charging Scenario"
+	default	n
+	help
+		Say y here to support LGE Power Management Charging Scenario Feature.
+		CONFIG_LGE_PM_CHARGING_SCENARIO releated changed.
+		Battery Charging with battery temperature.
+
+config LGE_PM_CHARGERLOGO
+	tristate "LGE_PM Support Chargerlogo"
+	default n
+	help
+		This feature is used for lge chargerlogo
+
+config LGE_PM_BATTERY_PRESENT
+	tristate "LGE_PM Support Battery Present Check"
+	default n
+	help
+		This feature is used for battery present check by PMIC interrupt
+
+config LGE_PM_BATTERY_ID
+	tristate "LGE_PM Support Battery ID Check"
+	default n
+	help
+		This feature is used for battery ID check
+
+config LGE_PM_BATTERY_PROFILE
+	tristate "LGE_PM Support Battery Profile"
+	depends on LGE_PM_BATTERY_ID
+	default n
+	help
+		This feature is used for use proper battery profile by using battery id
+
+config LGE_PM_SOC_SCALE
+	tristate "LGE_PM Support SOC Scaling"
+	default n
+	help
+		This feature is used for soc scaling
+
+config LGE_PM_OCV_UPDATE
+	tristate "LGE_PM Support OCV update"
+	default n
+	help
+		This feature is used for ocv update in suspend/resume
+
+config LGE_PM_PSEUDO_BATTERY
+	tristate "LGE_PM Support Fake Battery"
+	default n
+	help
+		This feature is used for faking battery presense to userspace
+
+config LGE_PM_USB_CURRENT_MAX
+	tristate "LGE_PM Support USB current max"
+	default n
+	help
+		This feature is used for USB current max setting when test scenario
+
+config LGE_PM_HIDDEN_MENU_TIMER_DISABLE
+	tristate "LGE_PM Hidden menu timer disable"
+	default n
+	 help
+		This feature will disable charging timeout from hidden_menu
+
+config LGE_PM_AT_CMD_SUPPORT
+	bool "LGE_PM AT Command Support"
+	default	n
+	help
+		Say y here to support LGE Power Management AT Commands.
+
+endif # LGE_PM
+
+endmenu
