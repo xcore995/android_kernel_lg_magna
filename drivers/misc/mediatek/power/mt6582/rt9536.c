@@ -17,7 +17,7 @@
 #include <cust_gpio_usage.h>
 #include <cust_gpio_boot.h>
 
-#include <rt9536.h>
+#include "rt9536.h"
 
 // G3 Stylus and L80+
 #include <mach/board_lge.h>
