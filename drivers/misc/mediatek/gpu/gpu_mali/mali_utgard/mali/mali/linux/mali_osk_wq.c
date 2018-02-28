@@ -1,11 +1,11 @@
 /*
- * This confidential and proprietary software may be used only as
- * authorised by a licensing agreement from ARM Limited
- * (C) COPYRIGHT 2008-2015 ARM Limited
- * ALL RIGHTS RESERVED
- * The entire notice above must be reproduced on all authorised
- * copies and copies may only be made to the extent permitted
- * by a licensing agreement from ARM Limited.
+ * Copyright (C) 2010-2014, 2016 ARM Limited. All rights reserved.
+ * 
+ * This program is free software and is provided to you under the terms of the GNU General Public License version 2
+ * as published by the Free Software Foundation, and any use by you of this program is subject to the terms of such GNU licence.
+ * 
+ * A copy of the licence is included with the program, and can also be obtained from Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
 /**
@@ -135,14 +135,12 @@ void _mali_osk_wq_delete_work(_mali_osk_wq_work_t *work)
 {
 	mali_osk_wq_work_object_t *work_object = (mali_osk_wq_work_object_t *)work;
 	_mali_osk_wq_flush();
-	MALI_DEBUG_PRINT(2, ("_mali_osk_wq_delete_work: Delete work_object = %p\n", work_object));
 	kfree(work_object);
 }
 
 void _mali_osk_wq_delete_work_nonflush(_mali_osk_wq_work_t *work)
 {
 	mali_osk_wq_work_object_t *work_object = (mali_osk_wq_work_object_t *)work;
-	MALI_DEBUG_PRINT(2, ("_mali_osk_wq_delete_work_nonflush: Delete work_object = %p\n", work_object));
 	kfree(work_object);
 }
 
@@ -214,7 +212,6 @@ mali_osk_wq_delayed_work_object_t *_mali_osk_wq_delayed_create_work(_mali_osk_wq
 void _mali_osk_wq_delayed_delete_work_nonflush(_mali_osk_wq_delayed_work_t *work)
 {
 	mali_osk_wq_delayed_work_object_t *work_object = (mali_osk_wq_delayed_work_object_t *)work;
-	MALI_DEBUG_PRINT(2, ("_mali_osk_wq_delayed_delete_work_nonflush: Delete work_object = %p\n", work_object));
 	kfree(work_object);
 }
 
@@ -227,15 +224,6 @@ void _mali_osk_wq_delayed_cancel_work_async(_mali_osk_wq_delayed_work_t *work)
 void _mali_osk_wq_delayed_cancel_work_sync(_mali_osk_wq_delayed_work_t *work)
 {
 	mali_osk_wq_delayed_work_object_t *work_object = (mali_osk_wq_delayed_work_object_t *)work;
-
-	/*print work inform*/
-	MALI_DEBUG_PRINT(2, ("Start print work_object = %p \n", work_object));
-	MALI_DEBUG_PRINT(2, ("timeline->delayed_work->data = %p\n", work_object->data));
-	MALI_DEBUG_PRINT(2, ("timeline->delayed_work->timer.entry.prev= %p\n", work_object->work.timer.entry.prev));
-	MALI_DEBUG_PRINT(2, ("timeline->delayed_work->timer.entry.next= %p\n", work_object->work.timer.entry.next));
-	MALI_DEBUG_PRINT(2, ("timeline->delayed_work->timer.expires= %ld\n", work_object->work.timer.expires));
-	MALI_DEBUG_PRINT(2, ("End print\n"));
-	
 	cancel_delayed_work_sync(&work_object->work);
 }
 

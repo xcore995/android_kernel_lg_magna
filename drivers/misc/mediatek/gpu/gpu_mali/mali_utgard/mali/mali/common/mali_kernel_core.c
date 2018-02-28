@@ -1,11 +1,11 @@
 /*
- * This confidential and proprietary software may be used only as
- * authorised by a licensing agreement from ARM Limited
- * (C) COPYRIGHT 2007-2015 ARM Limited
- * ALL RIGHTS RESERVED
- * The entire notice above must be reproduced on all authorised
- * copies and copies may only be made to the extent permitted
- * by a licensing agreement from ARM Limited.
+ * Copyright (C) 2010-2016 ARM Limited. All rights reserved.
+ * 
+ * This program is free software and is provided to you under the terms of the GNU General Public License version 2
+ * as published by the Free Software Foundation, and any use by you of this program is subject to the terms of such GNU licence.
+ * 
+ * A copy of the licence is included with the program, and can also be obtained from Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
 #include "mali_kernel_common.h"
@@ -42,6 +42,14 @@
 #include "mali_control_timer.h"
 #include "mali_dvfs_policy.h"
 #include <linux/sched.h>
+#include <linux/atomic.h>
+#if defined(CONFIG_MALI_DMA_BUF_FENCE)
+#include <linux/fence.h>
+#endif
+
+#ifdef ENABLE_MTK_MEMINFO
+#include "mtk_gpu_meminfo.h"
+#endif /* ENABLE_MTK_MEMINFO */
 
 #define MALI_SHARED_MEMORY_DEFAULT_SIZE 0xffffffff
 
@@ -756,6 +764,14 @@ _mali_osk_errcode_t mali_initialize_subsystems(void)
 		return err;
 	}
 
+#ifdef ENABLE_MTK_MEMINFO
+	mtk_gpu_meminfo_init();
+	mtk_gpu_meminfo_reset();
+#endif /* ENABLE_MTK_MEMINFO */
+
+	/*Try to init gpu secure mode */
+	_mali_osk_gpu_secure_mode_init();
+
 #if defined(CONFIG_MALI400_PROFILING)
 	err = _mali_osk_profiling_init(mali_boot_profiling ? MALI_TRUE : MALI_FALSE);
 	if (_MALI_OSK_ERR_OK != err) {
@@ -939,7 +955,13 @@ void mali_terminate_subsystems(void)
 	_mali_osk_profiling_term();
 #endif
 
+	_mali_osk_gpu_secure_mode_deinit();
+
 	mali_memory_terminate();
+
+#ifdef ENABLE_MTK_MEMINFO
+	mtk_gpu_meminfo_remove();
+#endif /* ENABLE_MTK_MEMINFO */
 
 	mali_session_terminate();
 
@@ -1079,7 +1101,7 @@ _mali_osk_errcode_t _mali_ukk_pending_submit(_mali_uk_pending_submit_s *args)
 	/* check pending big job number, might sleep if larger than MAX allowed number */
 	if (wait_event_interruptible(*queue, MALI_MAX_PENDING_BIG_JOB > mali_scheduler_job_gp_big_job_count())) {
 		return _MALI_OSK_ERR_RESTARTSYSCALL;
-}
+	}
 
 	return _MALI_OSK_ERR_OK; /* all ok */
 }
@@ -1143,6 +1165,17 @@ _mali_osk_errcode_t _mali_ukk_open(void **context)
 	if (NULL == session->soft_job_system) {
 		goto err_soft;
 	}
+
+	/* Initialize the dma fence context.*/
+#if defined(CONFIG_MALI_DMA_BUF_FENCE)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 17, 0)
+	session->fence_context = fence_context_alloc(1);
+	_mali_osk_atomic_init(&session->fence_seqno, 0);
+#else
+	MALI_PRINT_ERROR(("The kernel version not support dma fence!\n"));
+	goto err_time_line;
+#endif
+#endif
 
 	/* Create timeline system. */
 	session->timeline_system = mali_timeline_system_create(session);
@@ -1249,14 +1282,10 @@ _mali_osk_errcode_t _mali_ukk_close(void **context)
 	 * session has been completed, before we free internal data structures.
 	 */
 	_mali_osk_wq_flush();
-#if 0 
-/// Robin (this part cause booting fail, 
-/// this part cause potential memory corruption)
 
 	/* Destroy timeline system. */
 	mali_timeline_system_destroy(session->timeline_system);
 	session->timeline_system = NULL;
-#endif
 
 	/* Destroy soft system. */
 	mali_soft_job_system_destroy(session->soft_job_system);
@@ -1302,7 +1331,7 @@ _mali_osk_errcode_t _mali_ukk_close(void **context)
 	num_pm_updates_down = 0;
 #endif
 
-	return _MALI_OSK_ERR_OK;;
+	return _MALI_OSK_ERR_OK;
 }
 
 #if MALI_STATE_TRACKING

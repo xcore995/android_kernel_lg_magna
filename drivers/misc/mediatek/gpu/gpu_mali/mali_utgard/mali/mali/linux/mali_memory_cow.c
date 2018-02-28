@@ -1,11 +1,11 @@
 /*
- * This confidential and proprietary software may be used only as
- * authorised by a licensing agreement from ARM Limited
- * (C) COPYRIGHT 2013-2015 ARM Limited
- * ALL RIGHTS RESERVED
- * The entire notice above must be reproduced on all authorised
- * copies and copies may only be made to the extent permitted
- * by a licensing agreement from ARM Limited.
+ * Copyright (C) 2013-2016 ARM Limited. All rights reserved.
+ * 
+ * This program is free software and is provided to you under the terms of the GNU General Public License version 2
+ * as published by the Free Software Foundation, and any use by you of this program is subject to the terms of such GNU licence.
+ * 
+ * A copy of the licence is included with the program, and can also be obtained from Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 #include <linux/mm.h>
 #include <linux/list.h>
@@ -117,7 +117,7 @@ _mali_osk_errcode_t mali_memory_cow_os_memory(mali_mem_backend *target_bk,
 	pages = _mali_memory_cow_get_node_list(target_bk, target_offset, target_size);
 
 	if (NULL == pages) {
-		MALI_DEBUG_ASSERT(0);
+		MALI_DEBUG_PRINT_ERROR(("No memory page  need to cow ! \n"));
 		return _MALI_OSK_ERR_FAULT;
 	}
 
@@ -195,7 +195,7 @@ _mali_osk_errcode_t mali_memory_cow_swap_memory(mali_mem_backend *target_bk,
 
 	pages = _mali_memory_cow_get_node_list(target_bk, target_offset, target_size);
 	if (NULL == pages) {
-		MALI_DEBUG_ASSERT(0);
+		MALI_DEBUG_PRINT_ERROR(("No swap memory page need to cow ! \n"));
 		return _MALI_OSK_ERR_FAULT;
 	}
 
@@ -290,7 +290,7 @@ _mali_osk_errcode_t mali_memory_cow_modify_range(mali_mem_backend *backend,
 		u32 range_size)
 {
 	mali_mem_allocation *alloc = NULL;
-	struct  mali_session_data *session = NULL;
+	struct mali_session_data *session;
 	mali_mem_cow *cow = &backend->cow_mem;
 	struct mali_page_node *m_page, *m_tmp;
 	LIST_HEAD(pages);
@@ -320,26 +320,25 @@ _mali_osk_errcode_t mali_memory_cow_modify_range(mali_mem_backend *backend,
 		if ((count >= range_start / _MALI_OSK_MALI_PAGE_SIZE) &&
 		    (count < (range_start + range_size) / _MALI_OSK_MALI_PAGE_SIZE)) {
 			if (MALI_PAGE_NODE_SWAP != m_page->type) {
-			new_page = mali_mem_cow_alloc_page();
+				new_page = mali_mem_cow_alloc_page();
 
-			if (NULL == new_page) {
-				goto error;
-			}
-			if (1 != _mali_page_node_get_ref_count(m_page))
-				change_pages_nr++;
-			/* unref old page*/
-			_mali_osk_mutex_wait(session->cow_lock);
-			if (_mali_mem_put_page_node(m_page)) {
-				__free_page(new_page);
+				if (NULL == new_page) {
+					goto error;
+				}
+				if (1 != _mali_page_node_get_ref_count(m_page))
+					change_pages_nr++;
+				/* unref old page*/
+				_mali_osk_mutex_wait(session->cow_lock);
+				if (_mali_mem_put_page_node(m_page)) {
+					__free_page(new_page);
+					_mali_osk_mutex_signal(session->cow_lock);
+					goto error;
+				}
 				_mali_osk_mutex_signal(session->cow_lock);
-				goto error;
-			}
-			_mali_osk_mutex_signal(session->cow_lock);
-			
-			/* add new page*/
-			/* always use OS for COW*/
-			m_page->type = MALI_PAGE_NODE_OS;
-			_mali_page_node_add_page(m_page, new_page);
+				/* add new page*/
+				/* always use OS for COW*/
+				m_page->type = MALI_PAGE_NODE_OS;
+				_mali_page_node_add_page(m_page, new_page);
 			} else {
 				struct mali_swap_item *swap_item;
 
@@ -382,14 +381,14 @@ _mali_osk_errcode_t mali_memory_cow_modify_range(mali_mem_backend *backend,
 		MALI_DEBUG_ASSERT(alloc->cpu_mapping.vma->vm_end - alloc->cpu_mapping.vma->vm_start >= range_size);
 
 		if (MALI_MEM_BACKEND_FLAG_SWAP_COWED != (backend->flags & MALI_MEM_BACKEND_FLAG_SWAP_COWED)) {
-		zap_vma_ptes(alloc->cpu_mapping.vma, alloc->cpu_mapping.vma->vm_start + range_start, range_size);
+			zap_vma_ptes(alloc->cpu_mapping.vma, alloc->cpu_mapping.vma->vm_start + range_start, range_size);
 
 			ret = mali_mem_cow_cpu_map_pages_locked(backend, alloc->cpu_mapping.vma, alloc->cpu_mapping.vma->vm_start  + range_start, range_size / _MALI_OSK_MALI_PAGE_SIZE);
 
 			if (unlikely(ret != _MALI_OSK_ERR_OK)) {
 				MALI_DEBUG_PRINT(2, ("mali_memory_cow_modify_range: cpu mapping failed !\n"));
 				ret =  _MALI_OSK_ERR_FAULT;
-	}
+			}
 		} else {
 			/* used to trigger page fault for swappable cowed memory. */
 			alloc->cpu_mapping.vma->vm_flags |= VM_PFNMAP;
@@ -456,19 +455,23 @@ _mali_osk_errcode_t mali_memory_do_cow(mali_mem_backend *target_bk,
 		break;
 	case MALI_MEM_EXTERNAL:
 		/*NOT support yet*/
-		MALI_DEBUG_ASSERT(0);
+		MALI_DEBUG_PRINT_ERROR(("External physical memory not supported ! \n"));
+		return _MALI_OSK_ERR_UNSUPPORTED;
 		break;
 	case MALI_MEM_DMA_BUF:
 		/*NOT support yet*/
-		MALI_DEBUG_ASSERT(0);
+		MALI_DEBUG_PRINT_ERROR(("DMA buffer not supported ! \n"));
+		return _MALI_OSK_ERR_UNSUPPORTED;
 		break;
 	case MALI_MEM_UMP:
 		/*NOT support yet*/
-		MALI_DEBUG_ASSERT(0);
+		MALI_DEBUG_PRINT_ERROR(("UMP buffer not supported ! \n"));
+		return _MALI_OSK_ERR_UNSUPPORTED;
 		break;
 	default:
 		/*Not support yet*/
-		MALI_DEBUG_ASSERT(0);
+		MALI_DEBUG_PRINT_ERROR(("Invalid memory type not supported ! \n"));
+		return _MALI_OSK_ERR_UNSUPPORTED;
 		break;
 	}
 	return _MALI_OSK_ERR_OK;
@@ -591,7 +594,6 @@ u32 mali_mem_cow_release(mali_mem_backend *mem_bkend, mali_bool is_mali_mapped)
 {
 	mali_mem_allocation *alloc;
 	struct mali_session_data *session;
-	
 	u32 free_pages_nr = 0;
 	MALI_DEBUG_ASSERT_POINTER(mem_bkend);
 	MALI_DEBUG_ASSERT(MALI_MEM_COW == mem_bkend->type);
@@ -602,22 +604,17 @@ u32 mali_mem_cow_release(mali_mem_backend *mem_bkend, mali_bool is_mali_mapped)
 	MALI_DEBUG_ASSERT_POINTER(session);
 
 	if (MALI_MEM_BACKEND_FLAG_SWAP_COWED != (MALI_MEM_BACKEND_FLAG_SWAP_COWED & mem_bkend->flags)) {
-	/* Unmap the memory from the mali virtual address space. */
-	if (MALI_TRUE == is_mali_mapped)
-		mali_mem_os_mali_unmap(alloc);
+		/* Unmap the memory from the mali virtual address space. */
+		if (MALI_TRUE == is_mali_mapped)
+			mali_mem_os_mali_unmap(alloc);
+		/* free cow backend list*/
+		_mali_osk_mutex_wait(session->cow_lock);
+		free_pages_nr = mali_mem_os_free(&mem_bkend->cow_mem.pages, mem_bkend->cow_mem.count, MALI_TRUE);
+		_mali_osk_mutex_signal(session->cow_lock);
 
-	mutex_lock(&mem_bkend->mutex);
+		free_pages_nr += mali_mem_block_free_list(&mem_bkend->cow_mem.pages);
 
-	/* free cow backend list*/
-	/* Lock to avoid the free race condition for the cow shared memory page node. */
-	_mali_osk_mutex_wait(session->cow_lock);
-	free_pages_nr = mali_mem_os_free(&mem_bkend->cow_mem.pages, mem_bkend->cow_mem.count, MALI_TRUE);
-	_mali_osk_mutex_signal(session->cow_lock);
-
-	mutex_unlock(&mem_bkend->mutex);
-	free_pages_nr += mali_mem_block_free_list(&mem_bkend->cow_mem.pages);
-
-	MALI_DEBUG_ASSERT(list_empty(&mem_bkend->cow_mem.pages));
+		MALI_DEBUG_ASSERT(list_empty(&mem_bkend->cow_mem.pages));
 	} else {
 		free_pages_nr = mali_mem_swap_release(mem_bkend, is_mali_mapped);
 	}
@@ -757,7 +754,7 @@ _mali_osk_errcode_t mali_mem_cow_allocate_on_demand(mali_mem_backend *mem_bkend,
 		}
 		mem_bkend->cow_mem.change_pages_nr++;
 	}
-	
+
 	_mali_osk_mutex_wait(session->cow_lock);
 	if (_mali_mem_put_page_node(found_node)) {
 		__free_page(new_page);
@@ -766,7 +763,7 @@ _mali_osk_errcode_t mali_mem_cow_allocate_on_demand(mali_mem_backend *mem_bkend,
 		return _MALI_OSK_ERR_NOMEM;
 	}
 	_mali_osk_mutex_signal(session->cow_lock);
-	
+
 	list_replace(&found_node->list, &new_node->list);
 
 	kfree(found_node);

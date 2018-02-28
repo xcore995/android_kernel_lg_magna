@@ -1,11 +1,11 @@
 /*
- * This confidential and proprietary software may be used only as
- * authorised by a licensing agreement from ARM Limited
- * (C) COPYRIGHT 2011-2015 ARM Limited
- * ALL RIGHTS RESERVED
- * The entire notice above must be reproduced on all authorised
- * copies and copies may only be made to the extent permitted
- * by a licensing agreement from ARM Limited.
+ * Copyright (C) 2011-2016 ARM Limited. All rights reserved.
+ * 
+ * This program is free software and is provided to you under the terms of the GNU General Public License version 2
+ * as published by the Free Software Foundation, and any use by you of this program is subject to the terms of such GNU licence.
+ * 
+ * A copy of the licence is included with the program, and can also be obtained from Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
 #include "mali_pp_job.h"
@@ -15,10 +15,10 @@
 #include "regs/mali_200_regs.h"
 #include "mali_kernel_common.h"
 #include "mali_kernel_core.h"
+
 #if defined(CONFIG_MALI400_PROFILING)
 #include "mali_osk_profiling.h"
 #endif
-#include "mali_kernel_utilization.h"
 
 /* Number of frame registers on Mali-200 */
 #define MALI_PP_MALI200_NUM_FRAME_REGISTERS ((0x04C/4)+1)
@@ -488,12 +488,6 @@ void mali_pp_update_performance_counters(struct mali_pp_core *parent, struct mal
 		_mali_osk_profiling_record_global_counters(counter_index + 1, val1);
 #endif
 	}
-
-	if (MALI_UTILIZATION_BW_CTR_SRC0 == counter_src0
-			&& MALI_UTILIZATION_BW_CTR_SRC1 == counter_src1)
-	{
-		mali_utilization_bw_report_counters(val0, val1);
-	}	
 }
 
 #if MALI_STATE_TRACKING

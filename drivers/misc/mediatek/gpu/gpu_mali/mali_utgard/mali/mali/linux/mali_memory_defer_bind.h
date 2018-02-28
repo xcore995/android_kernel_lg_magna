@@ -1,11 +1,11 @@
 /*
- * This confidential and proprietary software may be used only as
- * authorised by a licensing agreement from ARM Limited
- * (C) COPYRIGHT 2013-2015 ARM Limited
- * ALL RIGHTS RESERVED
- * The entire notice above must be reproduced on all authorised
- * copies and copies may only be made to the extent permitted
- * by a licensing agreement from ARM Limited.
+ * Copyright (C) 2013-2016 ARM Limited. All rights reserved.
+ * 
+ * This program is free software and is provided to you under the terms of the GNU General Public License version 2
+ * as published by the Free Software Foundation, and any use by you of this program is subject to the terms of such GNU licence.
+ * 
+ * A copy of the licence is included with the program, and can also be obtained from Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 #ifndef __MALI_MEMORY_DEFER_BIND_H_
 #define __MALI_MEMORY_DEFER_BIND_H_
@@ -56,9 +56,8 @@ typedef struct mali_defer_bind_manager {
 
 _mali_osk_errcode_t mali_mem_defer_bind_manager_init(void);
 void mali_mem_defer_bind_manager_destory(void);
-_mali_osk_errcode_t mali_mem_defer_bind(u32 count, struct mali_gp_job *gp,
-					struct mali_defer_mem_block *dmem_block);
-_mali_osk_errcode_t mali_mem_defer_bind_allocation_prepare(mali_mem_allocation *alloc, struct list_head *list);
+_mali_osk_errcode_t mali_mem_defer_bind(struct mali_gp_job *gp, struct mali_defer_mem_block *dmem_block);
+_mali_osk_errcode_t mali_mem_defer_bind_allocation_prepare(mali_mem_allocation *alloc, struct list_head *list,  u32 *required_varying_memsize);
 _mali_osk_errcode_t mali_mem_prepare_mem_for_job(struct mali_gp_job *next_gp_job, mali_defer_mem_block *dblock);
 void mali_mem_defer_dmem_free(struct mali_gp_job *gp);
 

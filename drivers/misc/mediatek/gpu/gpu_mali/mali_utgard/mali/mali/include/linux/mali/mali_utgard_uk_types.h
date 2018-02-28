@@ -1,11 +1,21 @@
 /*
- * This confidential and proprietary software may be used only as
- * authorised by a licensing agreement from ARM Limited
- * (C) COPYRIGHT 2008-2015 ARM Limited
- * ALL RIGHTS RESERVED
- * The entire notice above must be reproduced on all authorised
- * copies and copies may only be made to the extent permitted
- * by a licensing agreement from ARM Limited.
+ * Copyright (C) 2010-2016 ARM Limited. All rights reserved.
+ * 
+ * This program is free software and is provided to you under the terms of the GNU General Public License version 2
+ * as published by the Free Software Foundation, and any use by you of this program is subject to the terms of such GNU licence.
+ * 
+ * A copy of the licence is included with the program, and can also be obtained from Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+ * Class Path Exception
+ * Linking this library statically or dynamically with other modules is making a combined work based on this library. 
+ * Thus, the terms and conditions of the GNU General Public License cover the whole combination.
+ * As a special exception, the copyright holders of this library give you permission to link this library with independent modules 
+ * to produce an executable, regardless of the license terms of these independent modules, and to copy and distribute the resulting 
+ * executable under terms of your choice, provided that you also meet, for each linked independent module, the terms and conditions 
+ * of the license of that module. An independent module is a module which is not derived from or based on this library. If you modify 
+ * this library, you may extend this exception to your version of the library, but you are not obligated to do so. 
+ * If you do not wish to do so, delete this exception statement from your version.
  */
 
 /**
@@ -262,7 +272,6 @@ typedef struct {
 	u64 user_job_ptr;                   /**< [in] identifier for the job in user space, a @c mali_gp_job_info* */
 	u32 priority;                       /**< [in] job priority. A lower number means higher priority */
 	u32 frame_registers[MALIGP2_NUM_REGS_FRAME]; /**< [in] core specific registers associated with this job */
-	u32 heap_grow_size;     /** <[in] the grow size of the plbu heap when out of memory */
 	u32 perf_counter_flag;              /**< [in] bitmask indicating which performance counters to enable, see \ref _MALI_PERFORMANCE_COUNTER_FLAG_SRC0_ENABLE and related macro definitions */
 	u32 perf_counter_src0;              /**< [in] source id for performance counter 0 (see ARM DDI0415A, Table 3-60) */
 	u32 perf_counter_src1;              /**< [in] source id for performance counter 1 (see ARM DDI0415A, Table 3-60) */
@@ -271,8 +280,8 @@ typedef struct {
 	_mali_uk_fence_t fence;             /**< [in] fence this job must wait on */
 	u64 timeline_point_ptr;            /**< [in,out] pointer to u32: location where point on gp timeline for this job will be written */
 	u32 varying_memsize;            /** < [in] size of varying memory to use deffer bind*/
-	u32 varying_alloc_num;
-	u64 varying_alloc_list;         /** < [in] memory hanlde list of varying buffer to use deffer bind */
+	u32 deferred_mem_num;
+	u64 deferred_mem_list;         /** < [in] memory hanlde list of varying buffer to use deffer bind */
 } _mali_uk_gp_start_job_s;
 
 #define _MALI_PERFORMANCE_COUNTER_FLAG_SRC0_ENABLE (1<<0) /**< Enable performance counter SRC0 for a job */
@@ -293,7 +302,6 @@ typedef struct {
 typedef struct {
 	u64 user_job_ptr;                    /**< [out] identifier for the job in user space */
 	u32 cookie;                          /**< [out] identifier for the core in kernel space on which the job stalled */
-	u32 heap_added_size;
 } _mali_uk_gp_job_suspended_s;
 
 /** @} */ /* end group _mali_uk_gp */
@@ -313,6 +321,7 @@ typedef struct {
 /** Flag for _mali_uk_pp_start_job_s */
 #define _MALI_PP_JOB_FLAG_NO_NOTIFICATION (1<<0)
 #define _MALI_PP_JOB_FLAG_IS_WINDOW_SURFACE (1<<1)
+#define _MALI_PP_JOB_FLAG_PROTECTED (1<<2)
 
 /** @defgroup _mali_uk_ppstartjob_s Fragment Processor Start Job
  * @{ */
@@ -649,7 +658,7 @@ typedef struct {
  * The 16bit integer is stored twice in a 32bit integer
  * For example, for version 1 the value would be 0x00010001
  */
-#define _MALI_API_VERSION 800
+#define _MALI_API_VERSION 900
 #define _MALI_UK_API_VERSION _MAKE_VERSION_ID(_MALI_API_VERSION)
 
 /**
@@ -744,6 +753,7 @@ typedef struct {
 #define _MALI_MEMORY_ALLOCATE_NO_BIND_GPU (1<<5) /*Not map to GPU when allocate, must call bind later*/
 #define _MALI_MEMORY_ALLOCATE_SWAPPABLE   (1<<6) /* Allocate swappale memory. */
 #define _MALI_MEMORY_ALLOCATE_DEFER_BIND (1<<7) /*Not map to GPU when allocate, must call bind later*/
+#define _MALI_MEMORY_ALLOCATE_SECURE (1<<8) /* Allocate secure memory. */
 
 
 typedef struct {
@@ -753,10 +763,7 @@ typedef struct {
 	u32 psize;                                        /**< [in] physical size of the allocation */
 	u32 flags;
 	u64 backend_handle;                               /**< [out] backend handle */
-	struct {
-		/* buffer types*/
-		/* CPU read/write info*/
-	} buffer_info;
+	s32 secure_shared_fd;                           /** < [in] the mem handle for secure mem */
 } _mali_uk_alloc_mem_s;
 
 
@@ -804,9 +811,6 @@ typedef struct {
 			u32 flags;                      /**< [in] flags, see \ref _MALI_MAP_EXTERNAL_MAP_GUARD_PAGE */
 		} bind_dma_buf;
 		struct {
-			/**/
-		} bind_mali_memory;
-		struct {
 			u32 phys_addr;                  /**< [in] physical address */
 			u32 rights;                     /**< [in] rights necessary for accessing memory */
 			u32 flags;                      /**< [in] flags, see \ref _MALI_MAP_EXTERNAL_MAP_GUARD_PAGE */
@@ -823,8 +827,8 @@ typedef struct {
 typedef struct {
 	u64 ctx;                                        /**< [in,out] user-kernel context (trashed on output) */
 	u32 target_handle;                              /**< [in] handle of allocation need to do COW */
-	u32 target_offset;              /**< [in] offset in target allocation to do COW(for support COW  a memory allocated from memory_bank, PAGE_SIZE align)*/
-	u32 target_size;                        /**< [in] size of target allocation to do COW (for support memory bank, PAGE_SIZE align)(in byte) */
+	u32 target_offset;                              /**< [in] offset in target allocation to do COW(for support COW  a memory allocated from memory_bank, PAGE_SIZE align)*/
+	u32 target_size;                                /**< [in] size of target allocation to do COW (for support memory bank, PAGE_SIZE align)(in byte) */
 	u32 range_start;                                /**< [in] re allocate range start offset, offset from the start of allocation (PAGE_SIZE align)*/
 	u32 range_size;                                 /**< [in] re allocate size (PAGE_SIZE align)*/
 	u32 vaddr;                                      /**< [in] mali address for the new allocaiton */
@@ -837,7 +841,7 @@ typedef struct {
 	u32 range_start;                                /**< [in] re allocate range start offset, offset from the start of allocation */
 	u32 size;                                       /**< [in] re allocate size*/
 	u32 vaddr;                                      /**< [in] mali address for the new allocaiton */
-	s32 change_pages_nr;            /**< [out] record the page number change for cow operation */
+	s32 change_pages_nr;                            /**< [out] record the page number change for cow operation */
 } _mali_uk_cow_modify_range_s;
 
 
