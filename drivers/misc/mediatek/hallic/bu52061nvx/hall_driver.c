@@ -15,6 +15,7 @@
 #include <mach/mt_typedefs.h>
 #include <mach/mt_gpio.h>
 #include <mach/mt_pm_ldo.h>
+#include <linux/input.h>
 
 #ifndef TPD_NO_GPIO
 #include "cust_eint.h"
@@ -54,6 +55,7 @@ static struct delayed_work pen_work;
 
 static struct workqueue_struct *cradle_wq;
 static struct mt6xxx_cradle *cradle;
+static struct input_dev *cradle_input;
 
 #if defined(TARGET_S6)
 int Touch_Quick_Cover_Closed = 0;
@@ -148,6 +150,9 @@ static void mt6xxx_pouch_work_func(struct work_struct *work)
 		switch_set_state(&cradle->sdev, cradle->state);
 
 		printk("%s : [Cradle] pouch value is %d\n", __func__ , state);
+		input_report_switch(cradle_input, SW_LID,
+		        cradle->state == SMARTCOVER_POUCH_OPENED ? 0 : 1);
+		input_sync(cradle_input);
 	}
 	else {
 		printk("%s : [Cradle] pouch value is %d (no change)\n", __func__ , state);
@@ -462,9 +467,38 @@ static struct platform_driver mt6xxx_cradle_driver = {
 	},
 };
 
+static int cradle_input_device_create(void){
+	int err = 0;
+
+	cradle_input = input_allocate_device();
+	if (!cradle_input) {
+		err = -ENOMEM;
+		goto exit;
+	}
+
+	cradle_input->name = "smartcover";
+	cradle_input->phys = "/dev/input/smartcover";
+
+	set_bit(EV_SW, cradle_input->evbit);
+	set_bit(SW_LID, cradle_input->swbit);
+
+	err = input_register_device(cradle_input);
+	if (err) {
+		goto exit_free;
+	}
+	return 0;
+
+exit_free:
+	input_free_device(cradle_input);
+	cradle_input = NULL;
+exit:
+	return err;
+}
+
 
 static int __init mt6xxx_cradle_init(void)
 {
+	cradle_input_device_create();
 	cradle_wq = create_singlethread_workqueue("cradle_wq");
 
 	if (!cradle_wq) {
@@ -479,7 +513,7 @@ static void __exit mt6xxx_cradle_exit(void)
 {
 	if (cradle_wq)
 		destroy_workqueue(cradle_wq);
-
+	input_unregister_device(cradle_input);
 	platform_driver_unregister(&mt6xxx_cradle_driver);
 }
 
