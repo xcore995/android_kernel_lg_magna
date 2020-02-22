@@ -1,5 +1,5 @@
 /*
-** Id: @(#) gl_bow.c@@
+** $Id: @(#) gl_bow.c@@
 */
 
 /*! \file   gl_bow.c
@@ -10,7 +10,7 @@
 */
 
 /*
-** Log: gl_bow.c
+** $Log: gl_bow.c $
 **
 ** 07 30 2013 yuche.tsai
 ** [BORA00002398] [MT6630][Volunteer Patch] P2P Driver Re-Design for Multiple BSS support
@@ -45,8 +45,7 @@
  *
  * 02 16 2012 chinghwa.yu
  * [WCXRP00000065] Update BoW design and settings
- * [ALPS00235223] [Rose][ICS][Cross Feature][AEE-IPANIC]The device reboot automatically and then the "KE" pops up
- * after you turn on the "Airplane mode".(once)
+ * [ALPS00235223] [Rose][ICS][Cross Feature][AEE-IPANIC]The device reboot automatically and then the "KE" pops up after you turn on the "Airplane mode".(once)
  *
  * [Root Cause]
  * PAL operates BOW char dev poll after BOW char dev is registered.
@@ -155,8 +154,7 @@
  * implementation of separate BT_OVER_WIFI data path.
  *
  * 01 12 2011 cp.wu
- * [WCXRP00000356] [MT6620 Wi-Fi][Driver] fill mac header length for security frames 'cause hardware header translation
- * needs such information
+ * [WCXRP00000356] [MT6620 Wi-Fi][Driver] fill mac header length for security frames 'cause hardware header translation needs such information
  * fill mac header length information for 802.1x frames.
  *
  * 11 11 2010 chinghwa.yu
@@ -263,9 +261,12 @@ UINT_32 g_arBowRevPalPacketTime[32];
 */
 
 /* forward declarations */
-static ssize_t bow_ampc_read(IN struct file *filp, IN char __user *buf, IN size_t size, IN OUT loff_t *ppos);
+static ssize_t
+bow_ampc_read(IN struct file *filp, IN char __user *buf, IN size_t size, IN OUT loff_t *ppos);
 
-static ssize_t bow_ampc_write(IN struct file *filp, OUT const char __user *buf, IN size_t size, IN OUT loff_t *ppos);
+static ssize_t
+bow_ampc_write(IN struct file *filp,
+	       OUT const char __user *buf, IN size_t size, IN OUT loff_t *ppos);
 
 static long bow_ampc_ioctl(IN struct file *filp, IN unsigned int cmd, IN OUT unsigned long arg);
 
@@ -274,6 +275,7 @@ static unsigned int bow_ampc_poll(IN struct file *filp, IN poll_table * wait);
 static int bow_ampc_open(IN struct inode *inodep, IN struct file *filp);
 
 static int bow_ampc_release(IN struct inode *inodep, IN struct file *filp);
+
 
 /* character file operations */
 static const struct file_operations bow_ampc_fops = {
@@ -301,6 +303,7 @@ static const struct file_operations bow_ampc_fops = {
 ********************************************************************************
 */
 
+
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief Register for character device to communicate with 802.11 PAL
@@ -315,7 +318,7 @@ BOOLEAN glRegisterAmpc(IN P_GLUE_INFO_T prGlueInfo)
 {
 	ASSERT(prGlueInfo);
 
-	DBGLOG(BOW, TRACE, "Register for character device to communicate with 802.11 PAL.\n");
+	DBGLOG(BOW, INFO, ("Register for character device to communicate with 802.11 PAL.\n"));
 
 	if (prGlueInfo->rBowInfo.fgIsRegistered == TRUE) {
 		return FALSE;
@@ -351,7 +354,9 @@ BOOLEAN glRegisterAmpc(IN P_GLUE_INFO_T prGlueInfo)
 /*        prGlueInfo->rBowInfo.prKfifo = kfifo_alloc(GLUE_BOW_KFIFO_DEPTH,
 		GFP_KERNEL,
 		&(prGlueInfo->rBowInfo.rSpinLock));*/
-		if ((kfifo_alloc((struct kfifo *)&(prGlueInfo->rBowInfo.rKfifo), GLUE_BOW_KFIFO_DEPTH, GFP_KERNEL)))
+		if ((kfifo_alloc
+		     ((struct kfifo *)&(prGlueInfo->rBowInfo.rKfifo), GLUE_BOW_KFIFO_DEPTH,
+		      GFP_KERNEL)))
 			goto fail_kfifo_alloc;
 
 /* if(prGlueInfo->rBowInfo.prKfifo == NULL) */
@@ -366,6 +371,7 @@ BOOLEAN glRegisterAmpc(IN P_GLUE_INFO_T prGlueInfo)
 		/* 5. add character device */
 		if (cdev_add(&(prGlueInfo->rBowInfo.cdev), prGlueInfo->rBowInfo.u4DeviceNumber, 1))
 			goto fail_cdev_add;
+
 
 		/* 6. in queue initialization */
 		init_waitqueue_head(&(prGlueInfo->rBowInfo.outq));
@@ -383,6 +389,7 @@ fail_kfifo_alloc:
 	}
 }				/* end of glRegisterAmpc */
 
+
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief Unregister character device for communicating with 802.11 PAL
@@ -397,7 +404,7 @@ BOOLEAN glUnregisterAmpc(IN P_GLUE_INFO_T prGlueInfo)
 {
 	ASSERT(prGlueInfo);
 
-	DBGLOG(BOW, INFO, "Unregister character device for communicating with 802.11 PAL.\n");
+	DBGLOG(BOW, INFO, ("Unregister character device for communicating with 802.11 PAL.\n"));
 
 	if (prGlueInfo->rBowInfo.fgIsRegistered == FALSE) {
 		return FALSE;
@@ -425,6 +432,7 @@ BOOLEAN glUnregisterAmpc(IN P_GLUE_INFO_T prGlueInfo)
 	}
 }				/* end of glUnregisterAmpc */
 
+
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief read handler for character device to communicate with 802.11 PAL
@@ -435,7 +443,8 @@ BOOLEAN glUnregisterAmpc(IN P_GLUE_INFO_T prGlueInfo)
 *
 */
 /*----------------------------------------------------------------------------*/
-static ssize_t bow_ampc_read(IN struct file *filp, IN char __user *buf, IN size_t size, IN OUT loff_t *ppos)
+static ssize_t
+bow_ampc_read(IN struct file *filp, IN char __user *buf, IN size_t size, IN OUT loff_t *ppos)
 {
 	UINT_8 aucBuffer[MAX_BUFFER_SIZE];
 	ssize_t retval;
@@ -445,10 +454,11 @@ static ssize_t bow_ampc_read(IN struct file *filp, IN char __user *buf, IN size_
 
 	ASSERT(prGlueInfo);
 
-	DBGLOG(BOW, INFO, "BoW EVENT read.\n");
+	DBGLOG(BOW, INFO, ("BoW EVENT read.\n"));
 
-	if ((prGlueInfo->rBowInfo.fgIsRegistered == FALSE) || (prGlueInfo->ulFlag & GLUE_FLAG_HALT))
+	if ((prGlueInfo->rBowInfo.fgIsRegistered == FALSE) || (prGlueInfo->ulFlag & GLUE_FLAG_HALT)) {
 		return -EFAULT;
+	}
 	/* size check */
 /* if(kfifo_len(prGlueInfo->rBowInfo.prKfifo) >= size) */
 	if (kfifo_len(&(prGlueInfo->rBowInfo.rKfifo)) >= size)
@@ -468,6 +478,7 @@ static ssize_t bow_ampc_read(IN struct file *filp, IN char __user *buf, IN size_
 	return retval;
 }
 
+
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief write handler for character device to communicate with 802.11 PAL
@@ -478,7 +489,9 @@ static ssize_t bow_ampc_read(IN struct file *filp, IN char __user *buf, IN size_
 *
 */
 /*----------------------------------------------------------------------------*/
-static ssize_t bow_ampc_write(IN struct file *filp, OUT const char __user *buf, IN size_t size, IN OUT loff_t *ppos)
+static ssize_t
+bow_ampc_write(IN struct file *filp,
+	       OUT const char __user *buf, IN size_t size, IN OUT loff_t *ppos)
 {
 	UINT_8 i;
 
@@ -489,30 +502,34 @@ static ssize_t bow_ampc_write(IN struct file *filp, OUT const char __user *buf, 
 	prGlueInfo = (P_GLUE_INFO_T) (filp->private_data);
 	ASSERT(prGlueInfo);
 
-	if ((prGlueInfo->rBowInfo.fgIsRegistered == FALSE) || (prGlueInfo->ulFlag & GLUE_FLAG_HALT))
+	if ((prGlueInfo->rBowInfo.fgIsRegistered == FALSE) || (prGlueInfo->ulFlag & GLUE_FLAG_HALT)) {
 		return -EFAULT;
+	}
 
 	if (size > MAX_BUFFER_SIZE)
 		return -EINVAL;
 	else if (copy_from_user(aucBuffer, buf, size))
 		return -EIO;
 
-	DBGLOG(BOW, EVENT, "AMP driver CMD buffer size : %d.\n", size);
+	DBGLOG(BOW, EVENT, ("AMP driver CMD buffer size : %d.\n", size));
 
-	for (i = 0; i < MAX_BUFFER_SIZE; i++)
-		DBGLOG(BOW, EVENT, "AMP write content : 0x%x.\n", aucBuffer[i]);
+	for (i = 0; i < MAX_BUFFER_SIZE; i++) {
+		DBGLOG(BOW, EVENT, ("AMP write content : 0x%x.\n", aucBuffer[i]));
+	}
 
-	DBGLOG(BOW, EVENT, "BoW CMD write.\n");
+	DBGLOG(BOW, EVENT, ("BoW CMD write.\n"));
 
 	prCmd = (P_AMPC_COMMAND) aucBuffer;
 
-	DBGLOG(BOW, EVENT, "AMP write content payload length : %d.\n", prCmd->rHeader.u2PayloadLength);
+	DBGLOG(BOW, EVENT,
+	       ("AMP write content payload length : %d.\n", prCmd->rHeader.u2PayloadLength));
 
-	DBGLOG(BOW, EVENT, "AMP write content header length : %d.\n", sizeof(AMPC_COMMAND_HEADER_T));
+	DBGLOG(BOW, EVENT,
+	       ("AMP write content header length : %d.\n", sizeof(AMPC_COMMAND_HEADER_T)));
 
 	/* size check */
 	if (prCmd->rHeader.u2PayloadLength + sizeof(AMPC_COMMAND_HEADER_T) != size) {
-		DBGLOG(BOW, EVENT, "Wrong CMD total length.\n");
+		DBGLOG(BOW, EVENT, ("Wrong CMD total length.\n"));
 
 		return -EINVAL;
 	}
@@ -522,6 +539,7 @@ static ssize_t bow_ampc_write(IN struct file *filp, OUT const char __user *buf, 
 	else
 		return -EINVAL;
 }
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -541,8 +559,9 @@ static long bow_ampc_ioctl(IN struct file *filp, IN unsigned int cmd, IN OUT uns
 
 	ASSERT(prGlueInfo);
 
-	if ((prGlueInfo->rBowInfo.fgIsRegistered == FALSE) || (prGlueInfo->ulFlag & GLUE_FLAG_HALT))
+	if ((prGlueInfo->rBowInfo.fgIsRegistered == FALSE) || (prGlueInfo->ulFlag & GLUE_FLAG_HALT)) {
 		return -EFAULT;
+	}
 	/* permission check */
 	if (_IOC_DIR(cmd) & _IOC_READ)
 		err = !access_ok(VERIFY_WRITE, (void __user *)arg, _IOC_SIZE(cmd));
@@ -554,6 +573,7 @@ static long bow_ampc_ioctl(IN struct file *filp, IN unsigned int cmd, IN OUT uns
 	/* no ioctl is implemented yet */
 	return 0;
 }
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -573,8 +593,9 @@ static unsigned int bow_ampc_poll(IN struct file *filp, IN poll_table * wait)
 
 	ASSERT(prGlueInfo);
 
-	if ((prGlueInfo->rBowInfo.fgIsRegistered == FALSE) || (prGlueInfo->ulFlag & GLUE_FLAG_HALT))
+	if ((prGlueInfo->rBowInfo.fgIsRegistered == FALSE) || (prGlueInfo->ulFlag & GLUE_FLAG_HALT)) {
 		return -EFAULT;
+	}
 
 	poll_wait(filp, &prGlueInfo->rBowInfo.outq, wait);
 
@@ -593,6 +614,7 @@ static unsigned int bow_ampc_poll(IN struct file *filp, IN poll_table * wait)
 	return retval;
 }
 
+
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief open handler for character device to communicate with 802.11 PAL
@@ -608,7 +630,7 @@ static int bow_ampc_open(IN struct inode *inodep, IN struct file *filp)
 	P_GLUE_INFO_T prGlueInfo;
 	P_GL_BOW_INFO prBowInfo;
 
-	DBGLOG(BOW, INFO, "in %s\n", __func__);
+	DBGLOG(BOW, INFO, ("in %s\n", __func__));
 
 	prBowInfo = container_of(inodep->i_cdev, GL_BOW_INFO, cdev);
 	ASSERT(prBowInfo);
@@ -621,6 +643,7 @@ static int bow_ampc_open(IN struct inode *inodep, IN struct file *filp)
 
 	return 0;
 }
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -637,12 +660,13 @@ static int bow_ampc_release(IN struct inode *inodep, IN struct file *filp)
 	P_GLUE_INFO_T prGlueInfo;
 	prGlueInfo = (P_GLUE_INFO_T) (filp->private_data);
 
-	DBGLOG(BOW, INFO, "in %s\n", __func__);
+	DBGLOG(BOW, INFO, ("in %s\n", __func__));
 
 	ASSERT(prGlueInfo);
 
 	return 0;
 }
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -663,19 +687,21 @@ VOID kalIndicateBOWEvent(IN P_GLUE_INFO_T prGlueInfo, IN P_AMPC_EVENT prEvent)
 	ASSERT(prEvent);
 
 	/* check device */
-	if ((prGlueInfo->rBowInfo.fgIsRegistered == FALSE) || (prGlueInfo->ulFlag & GLUE_FLAG_HALT))
+	if ((prGlueInfo->rBowInfo.fgIsRegistered == FALSE) || (prGlueInfo->ulFlag & GLUE_FLAG_HALT)) {
 		return;
+	}
 
 /*    u4AvailSize =
 	GLUE_BOW_KFIFO_DEPTH - kfifo_len(prGlueInfo->rBowInfo.prKfifo);*/
 
 	u4AvailSize = GLUE_BOW_KFIFO_DEPTH - kfifo_len(&(prGlueInfo->rBowInfo.rKfifo));
 
+
 	u4EventSize = prEvent->rHeader.u2PayloadLength + sizeof(AMPC_EVENT_HEADER_T);
 
 	/* check kfifo availability */
 	if (u4AvailSize < u4EventSize) {
-		DBGLOG(BOW, EVENT, "[bow] no space for event: %d/%d\n", u4EventSize, u4AvailSize);
+		DBGLOG(BOW, EVENT, ("[bow] no space for event: %d/%d\n", u4EventSize, u4AvailSize));
 		return;
 	}
 	/* queue into kfifo */
@@ -698,24 +724,26 @@ VOID kalIndicateBOWEvent(IN P_GLUE_INFO_T prGlueInfo, IN P_AMPC_EVENT prEvent)
 *           ENUM_BOW_DEVICE_STATE
 */
 /*----------------------------------------------------------------------------*/
-ENUM_BOW_DEVICE_STATE kalGetBowState(IN P_GLUE_INFO_T prGlueInfo, IN UINT_8 aucPeerAddress[6])
+ENUM_BOW_DEVICE_STATE kalGetBowState(IN P_GLUE_INFO_T prGlueInfo, IN UINT_8 aucPeerAddress[6]
+    )
 {
 	UINT_8 i;
 
 	ASSERT(prGlueInfo);
 
-	DBGLOG(BOW, EVENT, "kalGetBowState.\n");
+	DBGLOG(BOW, EVENT, ("kalGetBowState.\n"));
 
 	for (i = 0; i < CFG_BOW_PHYSICAL_LINK_NUM; i++) {
 		if (EQUAL_MAC_ADDR(prGlueInfo->rBowInfo.arPeerAddr, aucPeerAddress) == 0) {
 			DBGLOG(BOW, EVENT,
-			       "kalGetBowState, aucPeerAddress %x, %x:%x:%x:%x:%x:%x.\n", i,
+			       ("kalGetBowState, aucPeerAddress %x, %x:%x:%x:%x:%x:%x.\n", i,
 				aucPeerAddress[0], aucPeerAddress[1], aucPeerAddress[2],
-				aucPeerAddress[3], aucPeerAddress[4], aucPeerAddress[5]);
+				aucPeerAddress[3], aucPeerAddress[4], aucPeerAddress[5]));
 
 			DBGLOG(BOW, EVENT,
-			       "kalGetBowState, prGlueInfo->rBowInfo.aeState %x, %x.\n", i,
-				prGlueInfo->rBowInfo.aeState[i]);
+			       ("kalGetBowState, prGlueInfo->rBowInfo.aeState %x, %x.\n", i,
+				prGlueInfo->rBowInfo.aeState[i]));
+
 
 			return prGlueInfo->rBowInfo.aeState[i];
 		}
@@ -723,6 +751,7 @@ ENUM_BOW_DEVICE_STATE kalGetBowState(IN P_GLUE_INFO_T prGlueInfo, IN UINT_8 aucP
 
 	return BOW_DEVICE_STATE_DISCONNECTED;
 }
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -736,38 +765,43 @@ ENUM_BOW_DEVICE_STATE kalGetBowState(IN P_GLUE_INFO_T prGlueInfo, IN UINT_8 aucP
 *           none
 */
 /*----------------------------------------------------------------------------*/
-BOOLEAN kalSetBowState(IN P_GLUE_INFO_T prGlueInfo, IN ENUM_BOW_DEVICE_STATE eBowState, IN UINT_8 aucPeerAddress[6])
+BOOLEAN
+kalSetBowState(IN P_GLUE_INFO_T prGlueInfo,
+	       IN ENUM_BOW_DEVICE_STATE eBowState, IN UINT_8 aucPeerAddress[6]
+    )
 {
 	UINT_8 i;
 
 	ASSERT(prGlueInfo);
 
-	DBGLOG(BOW, EVENT, "kalSetBowState.\n");
+	DBGLOG(BOW, EVENT, ("kalSetBowState.\n"));
 
-	DBGLOG(BOW, EVENT, "kalSetBowState, prGlueInfo->rBowInfo.arPeerAddr, %x:%x:%x:%x:%x:%x.\n",
+	DBGLOG(BOW, EVENT, ("kalSetBowState, prGlueInfo->rBowInfo.arPeerAddr, %x:%x:%x:%x:%x:%x.\n",
 			    prGlueInfo->rBowInfo.arPeerAddr[0],
 			    prGlueInfo->rBowInfo.arPeerAddr[1],
 			    prGlueInfo->rBowInfo.arPeerAddr[2],
 			    prGlueInfo->rBowInfo.arPeerAddr[3],
-			    prGlueInfo->rBowInfo.arPeerAddr[4], prGlueInfo->rBowInfo.arPeerAddr[5]);
+			    prGlueInfo->rBowInfo.arPeerAddr[4],
+			    prGlueInfo->rBowInfo.arPeerAddr[5]));
 
-	DBGLOG(BOW, EVENT, "kalSetBowState, aucPeerAddress, %x:%x:%x:%x:%x:%x.\n",
+	DBGLOG(BOW, EVENT, ("kalSetBowState, aucPeerAddress, %x:%x:%x:%x:%x:%x.\n",
 			    aucPeerAddress[0],
 			    aucPeerAddress[1],
-			    aucPeerAddress[2], aucPeerAddress[3], aucPeerAddress[4], aucPeerAddress[5]);
+			    aucPeerAddress[2],
+			    aucPeerAddress[3], aucPeerAddress[4], aucPeerAddress[5]));
 
 	for (i = 0; i < CFG_BOW_PHYSICAL_LINK_NUM; i++) {
 		if (EQUAL_MAC_ADDR(prGlueInfo->rBowInfo.arPeerAddr, aucPeerAddress) == 0) {
 			prGlueInfo->rBowInfo.aeState[i] = eBowState;
 
 			DBGLOG(BOW, EVENT,
-			       "kalSetBowState, aucPeerAddress %x, %x:%x:%x:%x:%x:%x.\n", i,
+			       ("kalSetBowState, aucPeerAddress %x, %x:%x:%x:%x:%x:%x.\n", i,
 				aucPeerAddress[0], aucPeerAddress[1], aucPeerAddress[2],
-				aucPeerAddress[3], aucPeerAddress[4], aucPeerAddress[5]);
+				aucPeerAddress[3], aucPeerAddress[4], aucPeerAddress[5]));
 
 			DBGLOG(BOW, EVENT,
-			       "kalSetBowState, prGlueInfo->rBowInfo.aeState %x, %x.\n", i,
-				prGlueInfo->rBowInfo.aeState[i]);
+			       ("kalSetBowState, prGlueInfo->rBowInfo.aeState %x, %x.\n", i,
+				prGlueInfo->rBowInfo.aeState[i]));
 
 			return TRUE;
 		}
@@ -775,6 +809,7 @@ BOOLEAN kalSetBowState(IN P_GLUE_INFO_T prGlueInfo, IN ENUM_BOW_DEVICE_STATE eBo
 
 	return FALSE;
 }
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -802,16 +837,19 @@ ENUM_BOW_DEVICE_STATE kalGetBowGlobalState(IN P_GLUE_INFO_T prGlueInfo)
 
 	ASSERT(prGlueInfo);
 
+
 /* Henry, can reduce this logic to indentify state change */
 
 	for (i = 0; i < CFG_BOW_PHYSICAL_LINK_NUM; i++) {
-		if (prGlueInfo->rBowInfo.aeState[i] == BOW_DEVICE_STATE_CONNECTED)
+		if (prGlueInfo->rBowInfo.aeState[i] == BOW_DEVICE_STATE_CONNECTED) {
 			return BOW_DEVICE_STATE_CONNECTED;
+		}
 	}
 
 	for (i = 0; i < CFG_BOW_PHYSICAL_LINK_NUM; i++) {
-		if (prGlueInfo->rBowInfo.aeState[i] == BOW_DEVICE_STATE_STARTING)
+		if (prGlueInfo->rBowInfo.aeState[i] == BOW_DEVICE_STATE_STARTING) {
 			return BOW_DEVICE_STATE_STARTING;
+		}
 	}
 
 	return BOW_DEVICE_STATE_DISCONNECTED;
@@ -835,6 +873,7 @@ UINT_32 kalGetBowFreqInKHz(IN P_GLUE_INFO_T prGlueInfo)
 	return prGlueInfo->rBowInfo.u4FreqInKHz;
 }
 
+
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief to retrieve Bluetooth-over-Wi-Fi role
@@ -854,12 +893,14 @@ UINT_8 kalGetBowRole(IN P_GLUE_INFO_T prGlueInfo, IN PARAM_MAC_ADDRESS rPeerAddr
 	ASSERT(prGlueInfo);
 
 	for (i = 0; i < CFG_BOW_PHYSICAL_LINK_NUM; i++) {
-		if (EQUAL_MAC_ADDR(prGlueInfo->rBowInfo.arPeerAddr[i], rPeerAddr) == 0)
+		if (EQUAL_MAC_ADDR(prGlueInfo->rBowInfo.arPeerAddr[i], rPeerAddr) == 0) {
 			return prGlueInfo->rBowInfo.aucRole[i];
+		}
 	}
 
 	return 0;
 }
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -883,11 +924,11 @@ VOID kalSetBowRole(IN P_GLUE_INFO_T prGlueInfo, IN UINT_8 ucRole, IN PARAM_MAC_A
 
 	for (i = 0; i < CFG_BOW_PHYSICAL_LINK_NUM; i++) {
 		if (EQUAL_MAC_ADDR(prGlueInfo->rBowInfo.arPeerAddr[i], rPeerAddr) == 0) {
-			/* Henry, 0 : Responder, 1 : Initiator */
-			prGlueInfo->rBowInfo.aucRole[i] = ucRole;
+			prGlueInfo->rBowInfo.aucRole[i] = ucRole;	/* Henry, 0 : Responder, 1 : Initiator */
 		}
 	}
 }
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -908,16 +949,19 @@ UINT_8 kalGetBowAvailablePhysicalLinkCount(IN P_GLUE_INFO_T prGlueInfo)
 	ASSERT(prGlueInfo);
 
 	for (i = 0; i < CFG_BOW_PHYSICAL_LINK_NUM; i++) {
-		if (prGlueInfo->rBowInfo.aeState[i] == BOW_DEVICE_STATE_DISCONNECTED)
+		if (prGlueInfo->rBowInfo.aeState[i] == BOW_DEVICE_STATE_DISCONNECTED) {
 			ucLinkCount++;
+		}
 	}
 
 #if 0
-	DBGLOG(BOW, EVENT, "kalGetBowAvailablePhysicalLinkCount, ucLinkCount, %c.\n", ucLinkCount);
+	DBGLOG(BOW, EVENT,
+	       ("kalGetBowAvailablePhysicalLinkCount, ucLinkCount, %c.\n", ucLinkCount));
 #endif
 
 	return ucLinkCount;
 }
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -931,7 +975,9 @@ UINT_8 kalGetBowAvailablePhysicalLinkCount(IN P_GLUE_INFO_T prGlueInfo)
 * @retval FALSE     Fail to extract correct information
 */
 /*----------------------------------------------------------------------------*/
-BOOLEAN kalBowFrameClassifier(IN P_GLUE_INFO_T prGlueInfo, IN P_NATIVE_PACKET prPacket, OUT PBOOLEAN pfgIs1X)
+BOOLEAN
+kalBowFrameClassifier(IN P_GLUE_INFO_T prGlueInfo,
+		      IN P_NATIVE_PACKET prPacket, OUT PBOOLEAN pfgIs1X)
 {
 	UINT_32 u4PacketLen;
 	UINT_16 u2EtherTypeLen;
@@ -948,7 +994,7 @@ BOOLEAN kalBowFrameClassifier(IN P_GLUE_INFO_T prGlueInfo, IN P_NATIVE_PACKET pr
 	u4PacketLen = prSkb->len;
 
 	if (u4PacketLen < ETHER_HEADER_LEN) {
-		DBGLOG(INIT, WARN, "Invalid Ether packet length: %lu\n", u4PacketLen);
+		DBGLOG(INIT, WARN, ("Invalid Ether packet length: %lu\n", u4PacketLen));
 		return FALSE;
 	}
 
@@ -981,8 +1027,9 @@ BOOLEAN kalBowFrameClassifier(IN P_GLUE_INFO_T prGlueInfo, IN P_NATIVE_PACKET pr
 
 		WLAN_GET_FIELD_BE16(pucNextProtocol + ETH_LLC_LEN + ETH_SNAP_OUI_LEN, &u2LocalCode);
 
-		if (u2LocalCode == BOW_PROTOCOL_ID_SECURITY_FRAME)
+		if (u2LocalCode == BOW_PROTOCOL_ID_SECURITY_FRAME) {
 			*pfgIs1X = TRUE;
+		}
 
 		return TRUE;
 	}
@@ -1023,6 +1070,7 @@ static int bowOpen(IN struct net_device *prDev)
 	return 0;		/* success */
 }
 
+
 /*----------------------------------------------------------------------------*/
 /*!
  * \brief A function for net_device stop (ifdown)
@@ -1050,8 +1098,9 @@ static int bowStop(IN struct net_device *prDev)
 	netif_tx_stop_all_queues(prDev);
 
 	/* 2. turn of carrier */
-	if (netif_carrier_ok(prDev))
+	if (netif_carrier_ok(prDev)) {
 		netif_carrier_off(prDev);
+	}
 
 	return 0;
 };
@@ -1099,13 +1148,14 @@ static int bowHardStartXmit(IN struct sk_buff *prSkb, IN struct net_device *prDe
 	      ucSSAP == ETH_LLC_SSAP_SNAP &&
 	      ucControl == ETH_LLC_CONTROL_UNNUMBERED_INFORMATION &&
 	      aucOUI[0] == ETH_SNAP_BT_SIG_OUI_0 &&
-	      aucOUI[1] == ETH_SNAP_BT_SIG_OUI_1 && aucOUI[2] == ETH_SNAP_BT_SIG_OUI_2) || (prSkb->len > 1514)) {
+	      aucOUI[1] == ETH_SNAP_BT_SIG_OUI_1 &&
+	      aucOUI[2] == ETH_SNAP_BT_SIG_OUI_2) || (prSkb->len > 1514)) {
 		dev_kfree_skb(prSkb);
 		return NETDEV_TX_OK;
 	}
 
 	if (prGlueInfo->ulFlag & GLUE_FLAG_HALT) {
-		DBGLOG(BOW, TRACE, "GLUE_FLAG_HALT skip tx\n");
+		DBGLOG(BOW, TRACE, ("GLUE_FLAG_HALT skip tx\n"));
 		dev_kfree_skb(prSkb);
 		return NETDEV_TX_OK;
 	}
@@ -1123,6 +1173,7 @@ static int bowHardStartXmit(IN struct sk_buff *prSkb, IN struct net_device *prDe
 		GLUE_ACQUIRE_SPIN_LOCK(prGlueInfo, SPIN_LOCK_TX_QUE);
 		QUEUE_INSERT_TAIL(prTxQueue, prQueueEntry);
 		GLUE_RELEASE_SPIN_LOCK(prGlueInfo, SPIN_LOCK_TX_QUE);
+
 
 		GLUE_INC_REF_CNT(prGlueInfo->i4TxPendingFrameNum);
 		GLUE_INC_REF_CNT(prGlueInfo->ai4TxPendingFrameNumPerQueue[ucBssIndex][u2QueueIdx]);
@@ -1172,22 +1223,22 @@ static int bowHardStartXmit(IN struct sk_buff *prSkb, IN struct net_device *prDe
 	ucBssIndex = wlanGetBssIdxByNetInterface(prGlueInfo, NET_DEV_BOW_IDX);
 #endif
 
-	kalResetPacket(prGlueInfo, (P_NATIVE_PACKET) prSkb);
+    kalResetPacket(prGlueInfo, (P_NATIVE_PACKET)prSkb);
 
 	/* Discard frames not generated by PAL */
 	/* Parsing BOW frame info */
 	if (!kalBowFrameClassifier(prGlueInfo, (P_NATIVE_PACKET) prSkb, &fgIs1x)) {
 		/* Cannot extract packet */
-		DBGLOG(BOW, INFO, "Invalid BOW frame, skip Tx\n");
+		DBGLOG(BOW, INFO, ("Invalid BOW frame, skip Tx\n"));
 		dev_kfree_skb(prSkb);
 		return NETDEV_TX_OK;
 	}
 
-	if (fgIs1x)
-		GLUE_SET_PKT_FLAG(prSkb, ENUM_PKT_1X);
+	if (fgIs1x) {
+		GLUE_SET_PKT_FLAG_1X(prSkb);
+	}
 
 	if (kalHardStartXmit(prSkb, prDev, prGlueInfo, ucBssIndex) == WLAN_STATUS_SUCCESS) {
-		/* Successfully enqueue to Tx queue */
 		/* Successfully enqueue to Tx queue */
 	}
 
@@ -1242,7 +1293,9 @@ BOOLEAN kalInitBowDevice(IN P_GLUE_INFO_T prGlueInfo, IN const char *prDevName)
 			/* 1. setup netdev */
 			/* 1.1 Point to shared glue structure */
 			/* *((P_GLUE_INFO_T *) netdev_priv(prGlueInfo->rBowInfo.prDevHandler)) = prGlueInfo; */
-			prNetDevPriv = (P_NETDEV_PRIVATE_GLUE_INFO) netdev_priv(prGlueInfo->rBowInfo.prDevHandler);
+			prNetDevPriv =
+			    (P_NETDEV_PRIVATE_GLUE_INFO) netdev_priv(prGlueInfo->rBowInfo.
+								     prDevHandler);
 			prNetDevPriv->prGlueInfo = prGlueInfo;
 
 			/* 1.2 fill hardware address */
@@ -1269,8 +1322,7 @@ BOOLEAN kalInitBowDevice(IN P_GLUE_INFO_T prGlueInfo, IN const char *prDevName)
 			wlanBindBssIdxToNetInterface(prGlueInfo, bowInit(prAdapter),
 						     (PVOID) prGlueInfo->rBowInfo.prDevHandler);
 			prNetDevPriv->ucBssIdx = prAdapter->rWifiVar.rBowFsmInfo.ucBssIndex;
-			/* wlanBindNetInterface(prGlueInfo, NET_DEV_BOW_IDX, */
-			/* (PVOID)prGlueInfo->rBowInfo.prDevHandler); */
+			/* wlanBindNetInterface(prGlueInfo, NET_DEV_BOW_IDX, (PVOID)prGlueInfo->rBowInfo.prDevHandler); */
 
 			/* 3. finish */
 			prGlueInfo->rBowInfo.fgIsNetRegistered = TRUE;
@@ -1279,6 +1331,7 @@ BOOLEAN kalInitBowDevice(IN P_GLUE_INFO_T prGlueInfo, IN const char *prDevName)
 
 	return TRUE;
 }
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1308,8 +1361,9 @@ BOOLEAN kalUninitBowDevice(IN P_GLUE_INFO_T prGlueInfo)
 
 		bowUninit(prAdapter);
 
-		if (netif_carrier_ok(prGlueInfo->rBowInfo.prDevHandler))
+		if (netif_carrier_ok(prGlueInfo->rBowInfo.prDevHandler)) {
 			netif_carrier_off(prGlueInfo->rBowInfo.prDevHandler);
+		}
 
 		netif_tx_stop_all_queues(prGlueInfo->rBowInfo.prDevHandler);
 
@@ -1325,5 +1379,5 @@ BOOLEAN kalUninitBowDevice(IN P_GLUE_INFO_T prGlueInfo)
 	}
 }
 
-#endif /* CFG_BOW_SEPARATE_DATA_PATH */
-#endif /* CFG_ENABLE_BT_OVER_WIFI */
+#endif				/* CFG_BOW_SEPARATE_DATA_PATH */
+#endif				/* CFG_ENABLE_BT_OVER_WIFI */

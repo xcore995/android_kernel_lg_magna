@@ -6,17 +6,17 @@ ccflags-y += -DLINUX -DMT6628
 ccflags-y += -DCFG_SUPPORT_AGPS_ASSIST=1
 
 ccflags-y += -DCFG_SUPPORT_TSF_USING_BOOTTIME=1
-ccflags-y += -DCFG_P2P_LEGACY_COEX_REVISE=1
+
 ifeq ($(CONFIG_MTK_WAPI_SUPPORT), y)
     ccflags-y += -DCFG_SUPPORT_WAPI=1
 else
     ccflags-y += -DCFG_SUPPORT_WAPI=0
 endif
 
-ifeq ($(CONFIG_MTK_WIFI_MCC_SUPPORT), y)
-    ccflags-y += -DCFG_SUPPORT_MCC=1
+ifeq ($(CONFIG_MTK_WIFI_MCC_SUPPORT), no)
+    ccflags-y += -DCFG_SUPPORT_CHNL_CONFLICT_REVISE=1
 else
-	ccflags-y += -DCFG_SUPPORT_MCC=0
+    ccflags-y += -DCFG_SUPPORT_CHNL_CONFLICT_REVISE=0
 endif
 
 ifeq ($(CONFIG_HAVE_XLOG_FEATURE), y)
@@ -63,28 +63,6 @@ endif
 else
     ccflags-y += -DCFG_TC1_FEATURE=0
 endif
-
-MTK_SRAM_SIZE_OPTION=0
-ifeq ($(CONFIG_ARCH_MT6755), y)
-    MTK_SRAM_SIZE_OPTION=2
-endif
-ifeq ($(CONFIG_ARCH_MT6735), y)
-    MTK_SRAM_SIZE_OPTION=1
-endif
-ifeq ($(CONFIG_ARCH_MT6735M), y)
-    MTK_SRAM_SIZE_OPTION=1
-endif
-ifeq ($(CONFIG_ARCH_MT6753), y)
-    MTK_SRAM_SIZE_OPTION=1
-endif
-ifeq ($(CONFIG_ARCH_MT6580), y)
-    MTK_SRAM_SIZE_OPTION=1
-endif
-ifeq ($(CONFIG_ARCH_MT8163), y)
-    MTK_SRAM_SIZE_OPTION=1
-endif
-ccflags-y += -DCFG_SRAM_SIZE_OPTION=$(MTK_SRAM_SIZE_OPTION)
-
 
 MODULE_NAME := wlan_mt
 
@@ -141,8 +119,8 @@ OS_OBJS :=	$(OS_DIR)gl_init.o \
 			$(OS_DIR)gl_wext_priv.o \
 			$(OS_DIR)gl_rst.o \
 			$(OS_DIR)gl_cfg80211.o \
-			$(OS_DIR)platform.o		\
-			$(OS_DIR)gl_proc.o
+			$(OS_DIR)platform.o
+
 MGMT_OBJS := $(MGMT_DIR)ais_fsm.o \
 			 $(MGMT_DIR)aaa_fsm.o \
 			 $(MGMT_DIR)assoc.o \

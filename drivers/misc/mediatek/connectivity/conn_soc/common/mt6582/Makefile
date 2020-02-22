@@ -10,7 +10,7 @@ ifneq ($(KERNELRELEASE),)
   				-I$(srctree)/drivers/misc/mediatek/connectivity/common_detect
 
   subdir-ccflags-y += -D MTK_WCN_WMT_STP_EXP_SYMBOL_ABSTRACT
-  ifeq ($(CONFIG_MTK_CONN_LTE_IDC_SUPPORT),y)
+  ifeq ($(MTK_LTE_SUPPORT),yes)
         subdir-ccflags-y += -DWMT_IDC_SUPPORT=1
         else
         subdir-ccflags-y += -DWMT_IDC_SUPPORT=0

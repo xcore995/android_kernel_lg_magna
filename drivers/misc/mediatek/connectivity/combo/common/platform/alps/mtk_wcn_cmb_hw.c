@@ -157,25 +157,19 @@ INT32 mtk_wcn_cmb_hw_pwr_on(VOID)
 	/*3. set UART Tx/Rx to UART mode */
 	iRet += wmt_plat_gpio_ctrl(PIN_UART_GRP, PIN_STA_INIT);
 
-	if (0x6630 == mtk_wcn_wmt_chipid_query())
-	{
-		switch (wmt_plat_get_comm_if_type())
-		{
-			case STP_UART_IF_TX:
-				iRet += wmt_plat_gpio_ctrl(PIN_UART_RX, PIN_STA_OUT_H);
-				break;
-			case STP_SDIO_IF_TX:
-				iRet += wmt_plat_gpio_ctrl(PIN_UART_RX, PIN_STA_IN_L);
-#ifdef CONFIG_MTK_COMBO_COMM_NPWR
-				iRet += wmt_plat_gpio_ctrl(PIN_PCM_GRP, PIN_STA_OUT_L);
-				iRet += wmt_plat_gpio_ctrl(PIN_I2S_DAT, PIN_STA_OUT_L);
-#endif
-				break;
-			default:
-				WMT_ERR_FUNC("not supported common interface\n");
-				break;
-		}
+#ifdef MT6630_SW_STRAP_SUPPORT
+	switch (wmt_plat_get_comm_if_type()) {
+	case STP_UART_IF_TX:
+		iRet += wmt_plat_gpio_ctrl(PIN_UART_RX, PIN_STA_OUT_H);
+		break;
+	case STP_SDIO_IF_TX:
+		iRet += wmt_plat_gpio_ctrl(PIN_UART_RX, PIN_STA_IN_NP);
+		break;
+	default:
+		WMT_ERR_FUNC("not supported common interface\n");
+		break;
 	}
+#endif
 	/*4. PMU->output low, RST->output low, sleep off stable time */
 	iRet += wmt_plat_gpio_ctrl(PIN_PMU, PIN_STA_OUT_L);
 	iRet += wmt_plat_gpio_ctrl(PIN_RST, PIN_STA_OUT_L);
@@ -183,44 +177,17 @@ INT32 mtk_wcn_cmb_hw_pwr_on(VOID)
 
 	/*5. PMU->output high, sleep rst stable time */
 	iRet += wmt_plat_gpio_ctrl(PIN_PMU, PIN_STA_OUT_H);
-#ifdef CONFIG_MTK_COMBO_COMM_NPWR
-	if (0x6630 == mtk_wcn_wmt_chipid_query())
-	{
-		/*sleep 20ms, and make PCM_SYNC output high*/
-		osal_sleep_ms(20);
-		wmt_plat_gpio_ctrl(PIN_PCM_SYNC, PIN_STA_OUT_H);
-		/*sleep 20ms, and make I2S_DAT_OUT output high*/
-		osal_sleep_ms(20);
-		wmt_plat_gpio_ctrl(PIN_I2S_DAT, PIN_STA_OUT_H);
-		/*sleep 20ms, and make I2S_DAT_OUT output low*/
-		osal_sleep_ms(20);
-		wmt_plat_gpio_ctrl(PIN_I2S_DAT, PIN_STA_OUT_L);
-		/*sleep 20ms, and make PCM_SYNC output low*/
-		osal_sleep_ms(20);
-		wmt_plat_gpio_ctrl(PIN_PCM_SYNC, PIN_STA_OUT_L);
-		osal_sleep_ms(20);
-	}
-#endif
-
 	osal_sleep_ms(gPwrSeqTime.rstStableTime);
 
 	/*6. RST->output high, sleep on stable time */
 	iRet += wmt_plat_gpio_ctrl(PIN_RST, PIN_STA_OUT_H);
 	osal_sleep_ms(gPwrSeqTime.onStableTime);
 
-	if (0x6630 == mtk_wcn_wmt_chipid_query())
-	{
-		/*set UART Tx/Rx to UART mode*/
-		switch (wmt_plat_get_comm_if_type()) {
-		case STP_SDIO_IF_TX:
-			iRet += wmt_plat_gpio_ctrl(PIN_UART_RX, PIN_STA_IN_H);
-			break;
-		default:
-			WMT_ERR_FUNC("not supported common interface\n");
-			break;
-		}
-		/*no need to config I2S and PCM here, later audio interface config will cover this part*/
-	}
+#ifdef MT6630_SW_STRAP_SUPPORT
+	/*set UART Tx/Rx to UART mode */
+	iRet += wmt_plat_gpio_ctrl(PIN_UART_RX, PIN_STA_MUX);
+#endif
+
 
 	/*7. set audio interface to CMB_STUB_AIF_1, BT PCM ON, I2S OFF */
 	/* BT PCM bus default mode. Real control is done by audio */
@@ -246,25 +213,19 @@ INT32 mtk_wcn_cmb_hw_rst(VOID)
 {
 	INT32 iRet = 0;
 	WMT_INFO_FUNC("CMB-HW, hw_rst start, eirq should be disabled before this step\n");
-	if (0x6630 == mtk_wcn_wmt_chipid_query())
-	{
-		switch (wmt_plat_get_comm_if_type())
-		{
-			case STP_UART_IF_TX:
-				iRet += wmt_plat_gpio_ctrl(PIN_UART_RX, PIN_STA_OUT_H);
-				break;
-			case STP_SDIO_IF_TX:
-				iRet += wmt_plat_gpio_ctrl(PIN_UART_RX, PIN_STA_IN_L);
-#ifdef CONFIG_MTK_COMBO_COMM_NPWR
-				iRet += wmt_plat_gpio_ctrl(PIN_PCM_GRP, PIN_STA_OUT_L);
-				iRet += wmt_plat_gpio_ctrl(PIN_I2S_DAT, PIN_STA_OUT_L);
-#endif
-				break;
-			default:
-				WMT_ERR_FUNC("not supported common interface\n");
-				break;
-		}
+#ifdef MT6630_SW_STRAP_SUPPORT
+	switch (wmt_plat_get_comm_if_type()) {
+	case STP_UART_IF_TX:
+		iRet += wmt_plat_gpio_ctrl(PIN_UART_RX, PIN_STA_OUT_H);
+		break;
+	case STP_SDIO_IF_TX:
+		iRet += wmt_plat_gpio_ctrl(PIN_UART_RX, PIN_STA_IN_NP);
+		break;
+	default:
+		WMT_ERR_FUNC("not supported common interface\n");
+		break;
 	}
+#endif
 
 	/*1. PMU->output low, RST->output low, sleep off stable time */
 	iRet += wmt_plat_gpio_ctrl(PIN_PMU, PIN_STA_OUT_L);
@@ -273,46 +234,16 @@ INT32 mtk_wcn_cmb_hw_rst(VOID)
 
 	/*2. PMU->output high, sleep rst stable time */
 	iRet += wmt_plat_gpio_ctrl(PIN_PMU, PIN_STA_OUT_H);
-#ifdef CONFIG_MTK_COMBO_COMM_NPWR
-	if (0x6630 == mtk_wcn_wmt_chipid_query())
-	{
-		/*sleep 20ms, and make PCM_SYNC output high*/
-		osal_sleep_ms(20);
-		wmt_plat_gpio_ctrl(PIN_PCM_SYNC, PIN_STA_OUT_H);
-		/*sleep 20ms, and make I2S_DAT_OUT output high*/
-		osal_sleep_ms(20);
-		wmt_plat_gpio_ctrl(PIN_I2S_DAT, PIN_STA_OUT_H);
-		/*sleep 20ms, and make I2S_DAT_OUT output low*/
-		osal_sleep_ms(20);
-		wmt_plat_gpio_ctrl(PIN_I2S_DAT, PIN_STA_OUT_L);
-		/*sleep 20ms, and make PCM_SYNC output low*/
-		osal_sleep_ms(20);
-		wmt_plat_gpio_ctrl(PIN_PCM_SYNC, PIN_STA_OUT_L);
-		osal_sleep_ms(20);
-	}
-#endif
 	osal_sleep_ms(gPwrSeqTime.rstStableTime);
 
 	/*3. RST->output high, sleep on stable time */
 	iRet += wmt_plat_gpio_ctrl(PIN_RST, PIN_STA_OUT_H);
 	osal_sleep_ms(gPwrSeqTime.onStableTime);
 
-	if (0x6630 == mtk_wcn_wmt_chipid_query())
-	{
-		/*set UART Tx/Rx to UART mode*/
-		switch (wmt_plat_get_comm_if_type()) {
-		case STP_SDIO_IF_TX:
-			iRet += wmt_plat_gpio_ctrl(PIN_UART_RX, PIN_STA_IN_H);
-			break;
-		default:
-			WMT_ERR_FUNC("not supported common interface\n");
-			break;
-		}
-		/*no need to config I2S and PCM here, later audio interface config will cover this part*/
-	}
-    /*4. set audio interface to CMB_STUB_AIF_1, BT PCM ON, I2S OFF*/
-    /* BT PCM bus default mode. Real control is done by audio */
-    iRet += wmt_plat_audio_ctrl(CMB_STUB_AIF_1, CMB_STUB_AIF_CTRL_DIS);
+#ifdef MT6630_SW_STRAP_SUPPORT
+	/*set UART Tx/Rx to UART mode */
+	iRet += wmt_plat_gpio_ctrl(PIN_UART_RX, PIN_STA_MUX);
+#endif
 
 	WMT_INFO_FUNC("CMB-HW, hw_rst finish, eirq should be enabled after this step\n");
 	return 0;

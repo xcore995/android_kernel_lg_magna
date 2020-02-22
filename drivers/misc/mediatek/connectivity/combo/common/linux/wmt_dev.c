@@ -96,52 +96,47 @@ static wait_queue_head_t gWmtInitWq;
 P_WMT_PATCH_INFO pPatchInfo = NULL;
 UINT32 pAtchNum = 0;
 
-#ifdef MTK_COMBO_COMM_APO
-static int combo_comm_apo_flag = 1;
-#else
-static int combo_comm_apo_flag;
-#endif
-
 #if CONSYS_WMT_REG_SUSPEND_CB_ENABLE || CONSYS_EARLYSUSPEND_ENABLE
-#ifdef MTK_COMBO_COMM_APO
 static int mtk_wmt_func_off_background(void);
 static int mtk_wmt_func_on_background(void);
-#endif /*MTK_COMBO_COMM_APO end*/
 #endif
 
-
 #if CONSYS_EARLYSUSPEND_ENABLE
-#ifdef MTK_COMBO_COMM_APO
+
 UINT32 g_early_suspend_flag = 0;
 OSAL_SLEEPABLE_LOCK g_es_lr_lock;
 static void wmt_dev_early_suspend(struct early_suspend *h)
 {
-    osal_lock_sleepable_lock(&g_es_lr_lock);
+		osal_lock_sleepable_lock(&g_es_lr_lock);
     g_early_suspend_flag = 1;
     osal_unlock_sleepable_lock(&g_es_lr_lock);
     WMT_INFO_FUNC("@@@@@@@@@@wmt enter early suspend@@@@@@@@@@@@@@\n");
     if (MTK_WCN_BOOL_FALSE == mtk_wcn_wmt_func_off(WMTDRV_TYPE_LPBK)) {
         WMT_WARN_FUNC("WMT turn off LPBK fail\n");
-    } else {
-		wmt_lib_notify_stp_sleep();
-		WMT_INFO_FUNC("WMT turn off LPBK suceed");
     }
+		else
+		{
+			WMT_INFO_FUNC("WMT turn off LPBK suceed");
+		}
 }
 
 static void wmt_dev_late_resume(struct early_suspend *h)
 {
+    
     WMT_INFO_FUNC("@@@@@@@@@@wmt enter late resume@@@@@@@@@@@@@@\n");
     osal_lock_sleepable_lock(&g_es_lr_lock);
     g_early_suspend_flag = 0;
     osal_unlock_sleepable_lock(&g_es_lr_lock);
     mtk_wmt_func_on_background();
+    
+		return 0;
 }
 
 struct early_suspend wmt_early_suspend_handler = {
     .suspend = wmt_dev_early_suspend,
     .resume = wmt_dev_late_resume,
 };
-#endif /*MTK_COMBO_COMM_APO end*/
+
 #else
 UINT32 g_early_suspend_flag = 0;
 #endif
@@ -152,7 +147,7 @@ UINT32 g_early_suspend_flag = 0;
 
 
 #if CONSYS_WMT_REG_SUSPEND_CB_ENABLE || CONSYS_EARLYSUSPEND_ENABLE
-#ifdef MTK_COMBO_COMM_APO
+
 static INT32 wmt_pwr_on_thread (void *pvData)
 {
 	INT32 retryCounter = 1;
@@ -175,7 +170,6 @@ static INT32 wmt_pwr_on_thread (void *pvData)
 		}
 		else
 		{
-			wmt_lib_notify_stp_sleep();
 			WMT_INFO_FUNC("WMT turn on LPBK suceed");
 			break;
 		}
@@ -215,7 +209,6 @@ static INT32 mtk_wmt_func_on_background(void)
     }
 	return 0;
 }
-
 static INT32 mtk_wmt_func_off_background(void)
 {
 	if (MTK_WCN_BOOL_FALSE == mtk_wcn_wmt_func_off(WMTDRV_TYPE_LPBK)) {
@@ -223,12 +216,11 @@ static INT32 mtk_wmt_func_off_background(void)
 	}
 	else
 	{
-		wmt_lib_notify_stp_sleep();
 		WMT_INFO_FUNC("WMT turn off LPBK suceed");
 	}
 	return 0;
 }
-#endif /*MTK_COMBO_COMM_APO end*/
+
 #endif
 
 #if CFG_WMT_PROC_FOR_AEE
@@ -535,7 +527,7 @@ INT32 wmt_dev_patch_get(PUINT8 pPatchName, osal_firmware **ppPatch, INT32 padSzB
 	set_fs(get_ds());
 
 	/* load patch file from fs */
-	iRet = wmt_dev_read_file(pPatchName, (const PPUINT8)&pfw->data, 0, padSzBuf);
+	iRet = wmt_dev_read_file(pPatchName, &pfw->data, 0, padSzBuf);
 	set_fs(orig_fs);
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 29))
@@ -888,7 +880,7 @@ unsigned int WMT_poll(struct file *filp, poll_table *wait)
 /* INT32 WMT_ioctl(struct inode *inode, struct file *filp, UINT32 cmd, unsigned long arg) */
 long WMT_unlocked_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 {
-#define WMT_IOC_MAGIC					0xa0
+#define WMT_IOC_MAGIC        0xa0
 #define WMT_IOCTL_SET_PATCH_NAME		_IOW(WMT_IOC_MAGIC, 4, char*)
 #define WMT_IOCTL_SET_STP_MODE			_IOW(WMT_IOC_MAGIC, 5, int)
 #define WMT_IOCTL_FUNC_ONOFF_CTRL		_IOW(WMT_IOC_MAGIC, 6, int)
@@ -898,13 +890,12 @@ long WMT_unlocked_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 #define WMT_IOCTL_SET_LAUNCHER_KILL		_IOW(WMT_IOC_MAGIC, 13, int)
 #define WMT_IOCTL_SET_PATCH_NUM			_IOW(WMT_IOC_MAGIC, 14, int)
 #define WMT_IOCTL_SET_PATCH_INFO		_IOW(WMT_IOC_MAGIC, 15, char*)
-#define WMT_IOCTL_PORT_NAME				_IOWR(WMT_IOC_MAGIC, 20, char*)
+#define WMT_IOCTL_PORT_NAME			_IOWR(WMT_IOC_MAGIC, 20, char*)
 #define WMT_IOCTL_WMT_CFG_NAME			_IOWR(WMT_IOC_MAGIC, 21, char*)
-#define WMT_IOCTL_WMT_QUERY_CHIPID		_IOR(WMT_IOC_MAGIC, 22, int)
-#define WMT_IOCTL_WMT_TELL_CHIPID		_IOW(WMT_IOC_MAGIC, 23, int)
+#define WMT_IOCTL_WMT_QUERY_CHIPID	_IOR(WMT_IOC_MAGIC, 22, int)
+#define WMT_IOCTL_WMT_TELL_CHIPID	_IOW(WMT_IOC_MAGIC, 23, int)
 #define WMT_IOCTL_WMT_COREDUMP_CTRL     _IOW(WMT_IOC_MAGIC, 24, int)
 #define WMT_IOCTL_WMT_STP_ASSERT_CTRL   _IOW(WMT_IOC_MAGIC, 27, int)
-#define WMT_IOCTL_GET_APO_FLAG			_IOR(WMT_IOC_MAGIC, 28, int)
 
 
 
@@ -941,7 +932,7 @@ long WMT_unlocked_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 
 			pOp = wmt_lib_get_free_op();
 			if (!pOp) {
-				WMT_DBG_FUNC("get_free_lxop fail\n");
+				WMT_INFO_FUNC("get_free_lxop fail\n");
 				break;
 			}
 			pSignal = &pOp->signal;
@@ -1016,7 +1007,7 @@ long WMT_unlocked_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 
 			pOp = wmt_lib_get_free_op();
 			if (!pOp) {
-				WMT_DBG_FUNC("get_free_lxop fail\n");
+				WMT_WARN_FUNC("get_free_lxop fail\n");
 				iRet = -EFAULT;
 				break;
 			}
@@ -1172,21 +1163,13 @@ long WMT_unlocked_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 
 	case WMT_IOCTL_SET_PATCH_NUM:{
 			pAtchNum = arg;
-			if (pAtchNum == 0 || pAtchNum > MAX_PATCH_NUM) {
-				WMT_ERR_FUNC("patch num(%d) == 0 or > %d!\n", pAtchNum, MAX_PATCH_NUM);
-				iRet = -1;
-				break;
-			}
-
-			pPatchInfo = kzalloc(sizeof(WMT_PATCH_INFO) * pAtchNum, GFP_ATOMIC);
-			if (!pPatchInfo) {
-				WMT_ERR_FUNC("allocate memory fail!\n");
-				iRet = -EFAULT;
-				break;
-			}
-
 			WMT_INFO_FUNC(" get patch num from launcher = %d\n", pAtchNum);
 			wmt_lib_set_patch_num(pAtchNum);
+			pPatchInfo = kzalloc(sizeof(WMT_PATCH_INFO) *pAtchNum, GFP_ATOMIC);
+			if (!pPatchInfo) {
+				WMT_ERR_FUNC("allocate memory fail!\n");
+				break;
+			}
 		}
 		break;
 
@@ -1269,10 +1252,14 @@ long WMT_unlocked_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 		break;
 	case WMT_IOCTL_WMT_COREDUMP_CTRL:
 		{
-			mtk_wcn_stp_coredump_flag_ctrl(arg);
+			if (0 == arg) {
+				mtk_wcn_stp_coredump_flag_ctrl(0);
+			} else {
+				mtk_wcn_stp_coredump_flag_ctrl(1);
+			}
 		}
 		break;
-	case WMT_IOCTL_WMT_STP_ASSERT_CTRL:
+		case WMT_IOCTL_WMT_STP_ASSERT_CTRL:
 			if (MTK_WCN_BOOL_TRUE == wmt_lib_btm_cb(BTM_TRIGGER_STP_ASSERT_OP))
 			{
 				WMT_INFO_FUNC("trigger stp assert succeed\n");
@@ -1283,9 +1270,6 @@ long WMT_unlocked_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 				WMT_INFO_FUNC("trigger stp assert failed\n");
 				iRet = -1;
 			}
-		break;
-	case WMT_IOCTL_GET_APO_FLAG:
-		iRet = combo_comm_apo_flag;
 		break;
 	default:
 		iRet = -EINVAL;
@@ -1345,7 +1329,6 @@ struct class *wmt_class = NULL;
 #endif
 
 #if CONSYS_WMT_REG_SUSPEND_CB_ENABLE
-#ifdef MTK_COMBO_COMM_APO
 static int wmt_pm_event(struct notifier_block *notifier, unsigned long pm_event, void *unused)
 {
 	switch(pm_event) {
@@ -1365,7 +1348,6 @@ static struct notifier_block wmt_pm_notifier_block = {
     .notifier_call = wmt_pm_event,
     .priority = 0,
 };
-#endif /*MTK_COMBO_COMM_APO end*/
 #endif /* CONSYS_WMT_REG_SUSPEND_CB_ENABLE */
 
 static int WMT_init(void)
@@ -1447,22 +1429,18 @@ static int WMT_init(void)
 
     mtk_wcn_hif_sdio_update_cb_reg(wmt_dev_tra_sdio_update);
 #if CONSYS_WMT_REG_SUSPEND_CB_ENABLE
-#ifdef MTK_COMBO_COMM_APO
 	ret = register_pm_notifier(&wmt_pm_notifier_block);
 	if (ret)
 		WMT_ERR_FUNC("WMT failed to register PM notifier failed(%d)\n", ret);
-#endif /*MTK_COMBO_COMM_APO end*/
 #endif
 	gWmtInitDone = 1;
 	wake_up(&gWmtInitWq);
 #if CONSYS_EARLYSUSPEND_ENABLE
-#ifdef MTK_COMBO_COMM_APO
     osal_sleepable_lock_init(&g_es_lr_lock);
     register_early_suspend(&wmt_early_suspend_handler);
     WMT_INFO_FUNC("register_early_suspend finished\n");
-#endif /*MTK_COMBO_COMM_APO end*/
 #endif
-	WMT_INFO_FUNC("success\n");
+    WMT_INFO_FUNC("success \n");
     return 0;
 
  error:
@@ -1498,17 +1476,13 @@ static void WMT_exit(void)
 	dev_t dev = MKDEV(gWmtMajor, 0);
 
 #if CONSYS_EARLYSUSPEND_ENABLE
-#ifdef MTK_COMBO_COMM_APO
     unregister_early_suspend(&wmt_early_suspend_handler);
     osal_sleepable_lock_deinit(&g_es_lr_lock);
     WMT_INFO_FUNC("unregister_early_suspend finished\n");
-#endif /*MTK_COMBO_COMM_APO end*/
 #endif
 
 #if CONSYS_WMT_REG_SUSPEND_CB_ENABLE
-#ifdef MTK_COMBO_COMM_APO
 	unregister_pm_notifier(&wmt_pm_notifier_block);
-#endif /*MTK_COMBO_COMM_APO end*/
 #endif
     wmt_lib_deinit();
     

@@ -1,5 +1,5 @@
 /*
-** Id: @(#) gl_p2p_cfg80211.c@@
+** $Id: @(#) gl_p2p_cfg80211.c@@
 */
 
 /*! \file   gl_p2p_cfg80211.c
@@ -9,6 +9,9 @@
     This file contains the main routines of Linux driver for MediaTek Inc. 802.11
     Wireless LAN Adapters.
 */
+
+
+
 
 /*******************************************************************************
 *                         C O M P I L E R   F L A G S
@@ -55,11 +58,16 @@
 ********************************************************************************
 */
 
+
 #include "precomp.h"
 
-static UINT_8 rlmObssChnlLevelIn2G4(P_BSS_INFO_T prBssInfo, UINT_8 ucPriChannel, ENUM_CHNL_EXT_T eExtend);
 
-static UINT_8 rlmObssChnlLevelIn5G(P_BSS_INFO_T prBssInfo, UINT_8 ucPriChannel, ENUM_CHNL_EXT_T eExtend);
+static UINT_8
+rlmObssChnlLevelIn2G4(P_BSS_INFO_T prBssInfo, UINT_8 ucPriChannel, ENUM_CHNL_EXT_T eExtend);
+
+static UINT_8
+rlmObssChnlLevelIn5G(P_BSS_INFO_T prBssInfo, UINT_8 ucPriChannel, ENUM_CHNL_EXT_T eExtend);
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -76,7 +84,9 @@ static UINT_8 rlmObssChnlLevelIn5G(P_BSS_INFO_T prBssInfo, UINT_8 ucPriChannel, 
 * \return none
 */
 /*----------------------------------------------------------------------------*/
-UINT_8 rlmObssChnlLevel(P_BSS_INFO_T prBssInfo, ENUM_BAND_T eBand, UINT_8 ucPriChannel, ENUM_CHNL_EXT_T eExtend)
+UINT_8
+rlmObssChnlLevel(P_BSS_INFO_T prBssInfo,
+		 ENUM_BAND_T eBand, UINT_8 ucPriChannel, ENUM_CHNL_EXT_T eExtend)
 {
 	UINT_8 ucChannelLevel;
 
@@ -112,7 +122,8 @@ UINT_8 rlmObssChnlLevel(P_BSS_INFO_T prBssInfo, ENUM_BAND_T eBand, UINT_8 ucPriC
 * \return none
 */
 /*----------------------------------------------------------------------------*/
-static UINT_8 rlmObssChnlLevelIn2G4(P_BSS_INFO_T prBssInfo, UINT_8 ucPriChannel, ENUM_CHNL_EXT_T eExtend)
+static UINT_8
+rlmObssChnlLevelIn2G4(P_BSS_INFO_T prBssInfo, UINT_8 ucPriChannel, ENUM_CHNL_EXT_T eExtend)
 {
 	UINT_8 i, ucChannelLevel;
 	UINT_8 ucSecChannel, ucCenterChannel;
@@ -135,10 +146,12 @@ static UINT_8 rlmObssChnlLevelIn2G4(P_BSS_INFO_T prBssInfo, UINT_8 ucPriChannel,
 	ASSERT(ucCenterChannel >= 1 && ucCenterChannel <= 14);
 
 	/* Calculated low/upper channels in affected freq range */
-	ucAffectedChnl_L = (ucCenterChannel <= AFFECTED_CHNL_OFFSET) ? 1 : (ucCenterChannel - AFFECTED_CHNL_OFFSET);
+	ucAffectedChnl_L = (ucCenterChannel <= AFFECTED_CHNL_OFFSET) ?
+	    1 : (ucCenterChannel - AFFECTED_CHNL_OFFSET);
 
 	ucAffectedChnl_H = (ucCenterChannel >= (14 - AFFECTED_CHNL_OFFSET)) ?
 	    14 : (ucCenterChannel + AFFECTED_CHNL_OFFSET);
+
 
 	/* Check intolerant (Non-HT) channel list */
 	ASSERT(prBssInfo->auc2G_NonHtChnlList[0] <= CHNL_LIST_SZ_2G);
@@ -201,7 +214,8 @@ L_2G4_level_end:
 * \return none
 */
 /*----------------------------------------------------------------------------*/
-static UINT_8 rlmObssChnlLevelIn5G(P_BSS_INFO_T prBssInfo, UINT_8 ucPriChannel, ENUM_CHNL_EXT_T eExtend)
+static UINT_8
+rlmObssChnlLevelIn5G(P_BSS_INFO_T prBssInfo, UINT_8 ucPriChannel, ENUM_CHNL_EXT_T eExtend)
 {
 	UINT_8 i, ucChannelLevel;
 	UINT_8 ucSecChannel;
@@ -211,12 +225,13 @@ static UINT_8 rlmObssChnlLevelIn5G(P_BSS_INFO_T prBssInfo, UINT_8 ucPriChannel, 
 	ucChannelLevel = CHNL_LEVEL2;
 
 	/* Calculate center channel for 2.4G band */
-	if (eExtend == CHNL_EXT_SCA)
+	if (eExtend == CHNL_EXT_SCA) {
 		ucSecChannel = ucPriChannel + 4;
-	else if (eExtend == CHNL_EXT_SCB)
+	} else if (eExtend == CHNL_EXT_SCB) {
 		ucSecChannel = ucPriChannel - 4;
-	else
+	} else {
 		return CHNL_LEVEL0;
+	}
 	ASSERT(ucSecChannel >= 36);
 
 	/* Check 5G primary channel list */
@@ -276,15 +291,17 @@ VOID rlmObssScanExemptionRsp(P_ADAPTER_T prAdapter, P_BSS_INFO_T prBssInfo, P_SW
 
 	prMsduInfo = (P_MSDU_INFO_T)
 	    cnmMgtPktAlloc(prAdapter, PUBLIC_ACTION_MAX_LEN);
-	if (prMsduInfo == NULL)
+	if (prMsduInfo == NULL) {
 		return;
+	}
 
-	DBGLOG(RLM, INFO, "Send 20/40 coexistence rsp frame!\n");
+	DBGLOG(RLM, INFO, ("Send 20/40 coexistence rsp frame!\n"));
 
 	prTxFrame = (P_ACTION_20_40_COEXIST_FRAME) prMsduInfo->prPacket;
 
 	prTxFrame->u2FrameCtrl = MAC_FRAME_ACTION;
-	COPY_MAC_ADDR(prTxFrame->aucDestAddr, ((P_ACTION_20_40_COEXIST_FRAME) prSwRfb->pvHeader)->aucSrcAddr);
+	COPY_MAC_ADDR(prTxFrame->aucDestAddr,
+		      ((P_ACTION_20_40_COEXIST_FRAME) prSwRfb->pvHeader)->aucSrcAddr);
 	COPY_MAC_ADDR(prTxFrame->aucSrcAddr, prBssInfo->aucOwnMacAddr);
 	COPY_MAC_ADDR(prTxFrame->aucBSSID, prBssInfo->aucBSSID);
 
@@ -302,7 +319,8 @@ VOID rlmObssScanExemptionRsp(P_ADAPTER_T prAdapter, P_BSS_INFO_T prBssInfo, P_SW
 		     prMsduInfo,
 		     prBssInfo->ucBssIndex,
 		     prSwRfb->ucStaRecIdx,
-		     WLAN_MAC_MGMT_HEADER_LEN, WLAN_MAC_MGMT_HEADER_HTC_LEN + 5, NULL, MSDU_RATE_MODE_AUTO);
+		     WLAN_MAC_MGMT_HEADER_LEN,
+		     WLAN_MAC_MGMT_HEADER_HTC_LEN + 5, NULL, MSDU_RATE_MODE_AUTO);
 
 	/* Send them to HW queue */
 	nicTxEnqueueMsdu(prAdapter, prMsduInfo);

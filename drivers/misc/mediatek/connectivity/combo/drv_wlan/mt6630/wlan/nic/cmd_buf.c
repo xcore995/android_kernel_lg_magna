@@ -1,5 +1,5 @@
 /*
-** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/nic/cmd_buf.c#1
+** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/nic/cmd_buf.c#1 $
 */
 
 /*! \file   "cmd_buf.c"
@@ -17,8 +17,10 @@
        here.
 */
 
+
+
 /*
-** Log: cmd_buf.c
+** $Log: cmd_buf.c $
 **
 ** 09 17 2012 cm.chang
 ** [BORA00002149] [MT6630 Wi-Fi] Initial software development
@@ -121,6 +123,7 @@ VOID cmdBufInitialize(IN P_ADAPTER_T prAdapter)
 
 }				/* end of cmdBufInitialize() */
 
+
 /*----------------------------------------------------------------------------*/
 /*!
 * @brief Allocate CMD_INFO_T from a free list and MGMT memory pool.
@@ -139,6 +142,7 @@ P_CMD_INFO_T cmdBufAllocateCmdInfo(IN P_ADAPTER_T prAdapter, IN UINT_32 u4Length
 
 	DEBUGFUNC("cmdBufAllocateCmdInfo");
 
+
 	ASSERT(prAdapter);
 
 	KAL_ACQUIRE_SPIN_LOCK(prAdapter, SPIN_LOCK_CMD_RESOURCE);
@@ -147,37 +151,36 @@ P_CMD_INFO_T cmdBufAllocateCmdInfo(IN P_ADAPTER_T prAdapter, IN UINT_32 u4Length
 
 	if (prCmdInfo) {
 		/* Setup initial value in CMD_INFO_T */
-		prCmdInfo->u2InfoBufLen = 0;
-		prCmdInfo->fgIsOid = FALSE;
-		prCmdInfo->fgDriverDomainMCR = FALSE;
+		/* Start address of allocated memory */
+		prCmdInfo->pucInfoBuffer = cnmMemAlloc(prAdapter, RAM_TYPE_BUF, u4Length);
 
-		if (u4Length) {
-			/* Start address of allocated memory */
-			prCmdInfo->pucInfoBuffer = cnmMemAlloc(prAdapter, RAM_TYPE_BUF, u4Length);
+		if (prCmdInfo->pucInfoBuffer == NULL) {
+			KAL_ACQUIRE_SPIN_LOCK(prAdapter, SPIN_LOCK_CMD_RESOURCE);
+			QUEUE_INSERT_TAIL(&prAdapter->rFreeCmdList, &prCmdInfo->rQueEntry);
+			KAL_RELEASE_SPIN_LOCK(prAdapter, SPIN_LOCK_CMD_RESOURCE);
 
-			if (prCmdInfo->pucInfoBuffer == NULL) {
-				KAL_ACQUIRE_SPIN_LOCK(prAdapter, SPIN_LOCK_CMD_RESOURCE);
-				QUEUE_INSERT_TAIL(&prAdapter->rFreeCmdList, &prCmdInfo->rQueEntry);
-				KAL_RELEASE_SPIN_LOCK(prAdapter, SPIN_LOCK_CMD_RESOURCE);
-
-				prCmdInfo = NULL;
-			}
+			prCmdInfo = NULL;
 		} else {
-			prCmdInfo->pucInfoBuffer = NULL;
+			prCmdInfo->u2InfoBufLen = 0;
+			prCmdInfo->fgIsOid = FALSE;
+			prCmdInfo->fgDriverDomainMCR = FALSE;
 		}
 	}
 
 	if (prCmdInfo) {
-		DBGLOG(MEM, LOUD, "CMD[0x%p] allocated! LEN[%04u], Rest[%u]\n",
-				   prCmdInfo, u4Length, prAdapter->rFreeCmdList.u4NumElem);
+		DBGLOG(MEM, INFO,
+		       ("CMD[0x%p] allocated! LEN[%04u], Rest[%u]\n", prCmdInfo, u4Length,
+			prAdapter->rFreeCmdList.u4NumElem));
 	} else {
-		DBGLOG(MEM, ERROR, "CMD allocation failed! LEN[%04u], Rest[%u]\n",
-				   u4Length, prAdapter->rFreeCmdList.u4NumElem);
+		DBGLOG(MEM, INFO,
+		       ("CMD allocation failed! LEN[%04u], Rest[%u]\n", u4Length,
+			prAdapter->rFreeCmdList.u4NumElem));
 	}
 
 	return prCmdInfo;
 
 }				/* end of cmdBufAllocateCmdInfo() */
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -208,8 +211,11 @@ VOID cmdBufFreeCmdInfo(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo)
 		KAL_RELEASE_SPIN_LOCK(prAdapter, SPIN_LOCK_CMD_RESOURCE);
 	}
 
-	if (prCmdInfo)
-		DBGLOG(MEM, LOUD, "CMD[0x%p] freed! Rest[%u]\n", prCmdInfo, prAdapter->rFreeCmdList.u4NumElem);
+	if (prCmdInfo) {
+		DBGLOG(MEM, INFO,
+		       ("CMD[0x%p] freed! Rest[%u]\n", prCmdInfo,
+			prAdapter->rFreeCmdList.u4NumElem));
+	}
 
 	return;
 

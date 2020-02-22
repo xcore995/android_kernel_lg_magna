@@ -133,7 +133,7 @@ static P_STP_DBG_CPUPCR_T g_stp_dbg_cpupcr = NULL;
  *
  * No return value
  */
-static VOID core_dump_timeout_handler(unsigned long data)
+static VOID core_dump_timeout_handler(PVOID data)
 {
 	P_WCN_CORE_DUMP_T dmp = (P_WCN_CORE_DUMP_T) data;
 
@@ -789,13 +789,13 @@ INT32 wcn_compressor_in(P_WCN_COMPRESSOR_T cprs, PUINT8 buf, INT32 len, INT32 fi
 		if (len > cprs->L1_buf_sz) {
 			STP_DBG_ERR_FUNC("len=%d, too long err!\n", len);
 		} else {
-			STP_DBG_DBG_FUNC("L1 Flushed, and Put %d bytes to L1 buf\n", len);
+			STP_DBG_INFO_FUNC("L1 Flushed, and Put %d bytes to L1 buf\n", len);
 			osal_memcpy(&cprs->L1_buf[cprs->L1_pos], buf, len);
 			cprs->L1_pos += len;
 		}
 	} else {
 		/* put to L1 buffer */
-		STP_DBG_DBG_FUNC("Put %d bytes to L1 buf\n", len);
+		STP_DBG_INFO_FUNC("Put %d bytes to L1 buf\n", len);
 
 		osal_memcpy(&cprs->L1_buf[cprs->L1_pos], buf, len);
 		cprs->L1_pos += len;
@@ -904,91 +904,25 @@ INT32 wcn_compressor_reset(P_WCN_COMPRESSOR_T cprs, UINT8 enable, WCN_COMPRESS_A
 	return 0;
 }
 
-INT32 wcn_core_dump_nl(P_WCN_CORE_DUMP_T dmp, PUINT8 buf, INT32 len)
-{
-	INT32 ret = 0;
-
-	if ((!dmp) || (!buf)) {
-		STP_DBG_ERR_FUNC("invalid pointer!\n");
-		return -1;
-	}
-
-	ret = osal_lock_sleepable_lock(&dmp->dmp_lock);
-	if (ret) {
-		STP_DBG_ERR_FUNC("--->lock dmp->dmp_lock failed, ret=%d\n", ret);
-		return ret;
-	}
-
-	switch (dmp->sm) {
-	case CORE_DUMP_INIT:
-		osal_timer_start(&dmp->dmp_timer, STP_CORE_DUMP_TIMEOUT);
-		STP_DBG_WARN_FUNC("COMBO_CONSYS coredump start, please wait up to 1 minutes.\n");
-		/* check end srting */
-		ret = wcn_core_dump_check_end(buf, len);
-		if (ret == 1) {
-			STP_DBG_INFO_FUNC("core dump end!\n");
-			osal_timer_stop(&dmp->dmp_timer);
-			dmp->sm = CORE_DUMP_INIT;
-		} else {
-			dmp->sm = CORE_DUMP_DOING;
-		}
-		break;
-
-	case CORE_DUMP_DOING:
-		/* check end srting */
-		ret = wcn_core_dump_check_end(buf, len);
-		if (ret == 1) {
-			STP_DBG_INFO_FUNC("core dump end!\n");
-			osal_timer_stop(&dmp->dmp_timer);
-			dmp->sm = CORE_DUMP_INIT;
-		} else {
-			dmp->sm = CORE_DUMP_DOING;
-		}
-		break;
-
-	case CORE_DUMP_DONE:
-		osal_timer_stop(&dmp->dmp_timer);
-		dmp->sm = CORE_DUMP_INIT;
-		break;
-
-	case CORE_DUMP_TIMEOUT:
-		ret = 32;
-		break;
-	default:
-		break;
-	}
-
-	osal_unlock_sleepable_lock(&dmp->dmp_lock);
-
-	return ret;
-}
 
 static VOID stp_dbg_dump_data(PUINT8 pBuf, PINT8 title, INT32 len)
 {
 	INT32 k = 0;
-	char str[240] = {""};
-	INT32 strp = 0;
-	INT32 strlen = 0;
 	pr_warn(" %s-len:%d\n", title, len);
 	/* pr_warn("    ", title, len); */
 	for (k = 0; k < len; k++) {
-		if (strp < 200) {
-			strlen = osal_sprintf(&str[strp], "0x%02x ", pBuf[k]);
-			strp += strlen;
-		} else {
-			pr_warn("More than 200 of the data is too much\n");
-			break;
-		}
+		if (k % 16 == 0 && k != 0)
+			pr_warn("\n    ");
+		pr_warn("0x%02x ", pBuf[k]);
 	}
-	osal_sprintf(&str[strp], "--end\n");
-	pr_warn("%s", str);
+	pr_warn("--end\n");
 }
 
 
 static INT32 _stp_dbg_enable(MTKSTP_DBG_T *stp_dbg)
 {
 
-	unsigned long flags;
+	UINT32 flags;
 
 	spin_lock_irqsave(&(stp_dbg->logsys->lock), flags);
 	stp_dbg->pkt_trace_no = 0;
@@ -1001,7 +935,7 @@ static INT32 _stp_dbg_enable(MTKSTP_DBG_T *stp_dbg)
 static INT32 _stp_dbg_disable(MTKSTP_DBG_T *stp_dbg)
 {
 
-	unsigned long flags;
+	UINT32 flags;
 
 	spin_lock_irqsave(&(stp_dbg->logsys->lock), flags);
 	stp_dbg->pkt_trace_no = 0;
@@ -1014,7 +948,7 @@ static INT32 _stp_dbg_disable(MTKSTP_DBG_T *stp_dbg)
 static INT32 _stp_dbg_dmp_in(MTKSTP_DBG_T *stp_dbg, PINT8 buf, INT32 len)
 {
 
-	unsigned long flags;
+	UINT32 flags;
 	UINT32 internalFlag = stp_dbg->logsys->size < STP_DBG_LOG_ENTRY_NUM;
 	UINT32 in_len = 0;
 	/* #ifdef CONFIG_LOG_STP_INTERNAL */
@@ -1104,7 +1038,7 @@ INT32 stp_dbg_dmp_in(MTKSTP_DBG_T *stp_dbg, PINT8 buf, INT32 len)
 INT32 stp_dbg_dmp_print(MTKSTP_DBG_T *stp_dbg)
 {
 #define MAX_DMP_NUM 80
-	unsigned long flags;
+	UINT32 flags;
 	PINT8 pBuf = NULL;
 	INT32 len = 0;
 	STP_DBG_HDR_T *pHdr = NULL;
@@ -1162,7 +1096,7 @@ INT32 stp_dbg_dmp_out_ex(PINT8 buf, PINT32 len)
 INT32 stp_dbg_dmp_out(MTKSTP_DBG_T *stp_dbg, PINT8 buf, PINT32 len)
 {
 
-	unsigned long flags;
+	UINT32 flags;
 	INT32 remaining = 0;
 	*len = 0;
 	spin_lock_irqsave(&(stp_dbg->logsys->lock), flags);
@@ -1252,7 +1186,7 @@ static INT32 stp_dbg_add_pkt(MTKSTP_DBG_T *stp_dbg, struct stp_dbg_pkt_hdr *hdr,
     {
     	if(hdr->last_dbg_type != STP_DBG_FW_DMP)
     	{
-    		unsigned long flags;
+    		UINT32 flags;
 	    	STP_DBG_INFO_FUNC("reset stp_dbg logsys when queue fw coredump package(%d)\n",hdr->last_dbg_type);
 			STP_DBG_INFO_FUNC("dump 1st fw coredump package len(%d) for confirming\n",hdr->len);
 			spin_lock_irqsave(&(stp_dbg->logsys->lock), flags);
@@ -1376,25 +1310,17 @@ static INT32 stp_dbg_nl_reset(struct sk_buff *skb, struct genl_info *info)
 	return 0;
 }
 
-INT32 stp_dbg_nl_send(PINT8 aucMsg, UINT8 cmd, INT32 len)
+INT8 stp_dbg_nl_send(PINT8 aucMsg, UINT8 cmd)
 {
 	struct sk_buff *skb = NULL;
 	PVOID msg_head = NULL;
 	INT32 rc = -1;
 	INT32 i;
-	INT32 ret = 0;
 
 	if (num_bind_process == 0) {
 		/* no listening process */
 		STP_DBG_ERR_FUNC("%s(): the process is not invoked\n", __func__);
 		return 0;
-	}
-
-	ret = wcn_core_dump_nl(g_core_dump, aucMsg, len);
-	if (ret < 0)
-		return ret;
-	if (ret == 32) {
-		return ret;
 	}
 
 	for (i = 0; i < num_bind_process; i++) {
@@ -1405,16 +1331,15 @@ INT32 stp_dbg_nl_send(PINT8 aucMsg, UINT8 cmd, INT32 len)
 			    genlmsg_put(skb, 0, stp_dbg_seqnum++, &stp_dbg_gnl_family, 0, cmd);
 			if (msg_head == NULL) {
 				nlmsg_free(skb);
-				STP_DBG_DBG_FUNC("%s(): genlmsg_put fail...\n", __func__);
+				STP_DBG_ERR_FUNC("%s(): genlmsg_put fail...\n", __func__);
 				return -1;
 			}
 
-			/* rc = nla_put_string(skb, STP_DBG_ATTR_MSG, aucMsg); */
-			rc = nla_put(skb, STP_DBG_ATTR_MSG, len, aucMsg);
+			rc = nla_put_string(skb, STP_DBG_ATTR_MSG, aucMsg);
 			if (rc != 0) {
 				nlmsg_free(skb);
-				STP_DBG_DBG_FUNC("%s(): nla_put_string fail...: %d\n", __func__, rc);
-				return rc;
+				STP_DBG_ERR_FUNC("%s(): nla_put_string fail...\n", __func__);
+				return -1;
 			}
 
 			/* finalize the message */
@@ -1423,8 +1348,8 @@ INT32 stp_dbg_nl_send(PINT8 aucMsg, UINT8 cmd, INT32 len)
 			/* sending message */
 			rc = genlmsg_unicast(&init_net, skb, bind_pid[i]);
 			if (rc != 0) {
-				STP_DBG_DBG_FUNC("%s(): genlmsg_unicast fail...: %d\n", __func__, rc);
-				return rc;
+				STP_DBG_ERR_FUNC("%s(): genlmsg_unicast fail...\n", __func__);
+				return -1;
 			}
 		} else {
 			STP_DBG_ERR_FUNC("%s(): genlmsg_new fail...\n", __func__);
@@ -1473,7 +1398,7 @@ INT32 _stp_dbg_parser_assert_str(PINT8 str, ENUM_ASSERT_INFO_PARSER_TYPE type)
 	PINT8 pDtr = NULL;
 	PINT8 pTemp = NULL;
 	PINT8 pTemp2 = NULL;
-	INT8 tempBuf[64] = { 0 };
+	PINT8 tempBuf[64] = { 0 };
 	UINT32 len = 0;
 
 	PINT8 parser_sub_string[] = {

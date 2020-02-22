@@ -365,8 +365,9 @@ static void stp_tx_timeout_handler(unsigned long data)
 {
 	STP_WARN_FUNC("call retry btm retry wq ...\n");
 	/*shorten the softirq lattency */
-	if (mtk_wcn_stp_is_uart_mand_mode() || mtk_wcn_stp_is_uart_fullset_mode())
-		stop_log();
+#if WMT_PLAT_ALPS
+	stop_log();
+#endif
 	stp_btm_notify_stp_retry_wq(STP_BTM_CORE(stp_core_ctx));
 	STP_WARN_FUNC("call retry btm retry wq ...#\n");
 }
@@ -769,7 +770,7 @@ static VOID stp_send_ack(UINT8 txAck, UINT8 nak)
 	stp_dbg_pkt_log(STP_TASK_INDX, txAck, 0, 0, PKT_DIR_TX, NULL, 0);
 
 	if (fgEnableDelimiter == 1) {
-		iStatus = (*sys_if_tx) ((const PUINT8)(&stp_delimiter[0]), STP_DEL_SIZE, &ret);
+		iStatus = (*sys_if_tx) (&stp_delimiter[0], STP_DEL_SIZE, &ret);
 		STP_DUMP_PACKET_HEAD((PUINT8) & stp_delimiter[0], "tx del", STP_DEL_SIZE);
 		if (ret != STP_DEL_SIZE) {
 			STP_ERR_FUNC("stp_send_ack, %d/%d status %d\n", STP_DEL_SIZE, ret, iStatus);
@@ -857,7 +858,7 @@ INT32 stp_send_data_no_ps(PUINT8 buffer, UINT32 length, UINT8 type)
 
 			if (fgEnableDelimiter == 1) {
 				stp_core_ctx.tx_length[stp_core_ctx.sequence.txseq] += STP_DEL_SIZE;
-				stp_add_to_tx_queue((const PUINT8)(&stp_delimiter[0]), STP_DEL_SIZE);
+				stp_add_to_tx_queue(&stp_delimiter[0], STP_DEL_SIZE);
 			}
 
 			stp_add_to_tx_queue(mtkstp_header, MTKSTP_HEADER_SIZE);
@@ -1011,7 +1012,7 @@ static VOID stp_process_packet(VOID)
 			if (stp_core_ctx.parser.type == BT_TASK_INDX) {
 				const static UINT8 rst_buf[7] =
 				    { 0x04, 0x0e, 0x04, 0x01, 0x3, 0xc, 0x00 };
-				if (!osal_strncmp(stp_core_ctx.rx_buf, (const PINT8)rst_buf, 7)) {
+				if (!osal_strncmp(stp_core_ctx.rx_buf, rst_buf, 7)) {
 					osal_printtimeofday("############ BT Rest end <--");
 				}
 			}
@@ -1136,8 +1137,9 @@ static VOID stp_process_packet(VOID)
 	if (stp_process_packet_fail_count > MTKSTP_RETRY_LIMIT) {
 		stp_process_packet_fail_count = 0;
 		STP_ERR_FUNC("The process packet fail count > 10 lastly\n\r, whole chip reset\n\r");
-		if (mtk_wcn_stp_is_uart_mand_mode() || mtk_wcn_stp_is_uart_fullset_mode())
-			stop_log();	/* dump_uart_history(); */
+#if WMT_PLAT_ALPS
+		stop_log();	/* dump_uart_history(); */
+#endif
 		mtk_wcn_stp_dbg_dump_package();
 		stp_notify_btm_dump(STP_BTM_CORE(stp_core_ctx));
 
@@ -1465,7 +1467,7 @@ INT32 mtk_wcn_stp_dbg_log_ctrl(UINT32 on)
 INT32 mtk_wcn_stp_coredump_flag_ctrl(UINT32 on)
 {
 	STP_ENABLE_FW_COREDUMP(stp_core_ctx, on);
-	STP_INFO_FUNC("%d coredump function.\n", on)
+	STP_INFO_FUNC("%s coredump function.\n", 0 == on ? "disable" : "enable")
 	    return 0;
 }
 
@@ -1834,7 +1836,7 @@ INT32 mtk_wcn_stp_parser_data(PUINT8 buffer, UINT32 length)
 #if 1
 					i_ret = -2;
 				if (0 == stp_core_ctx.parser.length) {
-					STP_DBG_FUNC("FW Assert len = 0, ignore this pkg\n");
+					STP_INFO_FUNC("FW Assert len = 0, ignore this pkg\n");
 					/*discard CRC */
 					if (i >= 2) {
 						STP_DBG_FUNC("crc discard.. i = %d\n", i);
@@ -1849,7 +1851,7 @@ INT32 mtk_wcn_stp_parser_data(PUINT8 buffer, UINT32 length)
 						/*STP_DBG_FUNC("\n[STP]FW_EVENT========= no padding byte =========\n"); */
 						/*do nothing */
 					} else if (i <= 4) {
-						STP_DBG_FUNC
+						STP_INFO_FUNC
 						    ("\n[STP]FW_EVENT========= block padding %d bytes =========\n",
 						     i);
 						p_data += i;
@@ -1861,15 +1863,16 @@ INT32 mtk_wcn_stp_parser_data(PUINT8 buffer, UINT32 length)
 						       6) & 0x03)) & 0x03;
 						p_data += padding_len;
 						i -= padding_len;
-						STP_DBG_FUNC
+						STP_INFO_FUNC
 						    ("\n[STP]FW_EVENT========= STP Agg padding %d bytes =========\n",
 						     padding_len);
 					}
 					continue;
 				}
 				if (STP_IS_READY(stp_core_ctx)) {
-					if (mtk_wcn_stp_is_uart_mand_mode() || mtk_wcn_stp_is_uart_fullset_mode())
-						stop_log();
+#if WMT_PLAT_ALPS
+					stop_log();
+#endif
 					mtk_wcn_stp_dbg_dump_package();
 					stp_notify_btm_dump(STP_BTM_CORE(stp_core_ctx));
 				}
@@ -1939,7 +1942,7 @@ INT32 mtk_wcn_stp_parser_data(PUINT8 buffer, UINT32 length)
 							STP_INFO_FUNC
 							    ("only dump 20 packages from the begging\n");
 						} else if (counter < 20) {
-							STP_DBG_FUNC
+							osal_err_print
 							    ("[len=%d][type=%d]counter[%d]\n%s\n",
 							     stp_core_ctx.rx_counter,
 							     stp_core_ctx.parser.type, counter,
@@ -2018,10 +2021,10 @@ INT32 mtk_wcn_stp_parser_data(PUINT8 buffer, UINT32 length)
 					/*STP packet 4-bytes alignment */
 					/*Discard padding bytes , otherwise make parser state machine disorder */
 					if (0 == i) {
-						STP_DBG_FUNC
+						STP_INFO_FUNC
 						    ("\n[STP]FW_EVENT========= no padding byte =========\n");
 					} else if (i <= 4) {
-						STP_DBG_FUNC
+						STP_INFO_FUNC
 						    ("\n[STP]FW_EVENT========= block padding %d bytes =========\n",
 						     i);
 						p_data += i;
@@ -2033,7 +2036,7 @@ INT32 mtk_wcn_stp_parser_data(PUINT8 buffer, UINT32 length)
 						       6) & 0x03)) & 0x03;
 						p_data += padding_len;
 						i -= padding_len;
-						STP_DBG_FUNC
+						STP_INFO_FUNC
 						    ("\n[STP]FW_EVENT========= STP Agg padding %d bytes =========\n",
 						     padding_len);
 					}
@@ -2103,7 +2106,7 @@ INT32 mtk_wcn_stp_parser_data(PUINT8 buffer, UINT32 length)
 					/*STP packet 4-bytes alignment */
 					/*Discard padding bytes , otherwise make parser state machine disorder */
 					if (i <= 4) {
-						STP_DBG_FUNC
+						STP_INFO_FUNC
 						    ("\n[STP]FW_EVENT========= block padding %d bytes =========\n",
 						     i - 1);
 						p_data += (i - 1);
@@ -2115,7 +2118,7 @@ INT32 mtk_wcn_stp_parser_data(PUINT8 buffer, UINT32 length)
 						       6) & 0x03)) & 0x03;
 						p_data += padding_len;
 						i -= padding_len;
-						STP_DBG_FUNC
+						STP_INFO_FUNC
 						    ("\n[STP]FW_EVENT========= STP Agg padding %d bytes =========\n",
 						     padding_len);
 					}
@@ -2423,7 +2426,7 @@ INT32 mtk_wcn_stp_parser_data(PUINT8 buffer, UINT32 length)
 			case MTKSTP_FW_MSG:
 					i_ret = -2;
 				if (0 == stp_core_ctx.parser.length) {
-					STP_DBG_FUNC("FW Assert len = 0, ignore this pkg\n");
+					STP_INFO_FUNC("FW Assert len = 0, ignore this pkg\n");
 					/*discard CRC */
 					if (i >= 2) {
 						STP_DBG_FUNC("crc discard.. i = %d\n", i);
@@ -2435,8 +2438,9 @@ INT32 mtk_wcn_stp_parser_data(PUINT8 buffer, UINT32 length)
 					continue;
 				}
 				if (STP_IS_READY(stp_core_ctx)) {
-					if (mtk_wcn_stp_is_uart_mand_mode() || mtk_wcn_stp_is_uart_fullset_mode())
-						stop_log();
+#if WMT_PLAT_ALPS
+					stop_log();
+#endif
 					mtk_wcn_stp_dbg_dump_package();
 					stp_notify_btm_dump(STP_BTM_CORE(stp_core_ctx));
 				}
@@ -2856,8 +2860,8 @@ INT32 mtk_wcn_stp_send_data(const PUINT8 buffer, const UINT32 length, const UINT
  DONT_MONITOR:
 #endif
 	if (type == BT_TASK_INDX) {
-		static const UINT8 rst_buf[4] = { 0x01, 0x03, 0x0c, 0x00 };
-		if (!osal_strncmp(buffer, (const PINT8)rst_buf, 4)) {
+		const static UINT8 rst_buf[4] = { 0x01, 0x03, 0x0c, 0x00 };
+		if (!osal_strncmp(buffer, rst_buf, 4)) {
 			osal_printtimeofday("############ BT Rest start -->");
 		}
 	}
@@ -2936,7 +2940,7 @@ INT32 mtk_wcn_stp_send_data(const PUINT8 buffer, const UINT32 length, const UINT
 			    MTKSTP_HEADER_SIZE + length + 2;
 			if (fgEnableDelimiter == 1) {
 				stp_core_ctx.tx_length[stp_core_ctx.sequence.txseq] += STP_DEL_SIZE;
-				stp_add_to_tx_queue((const PUINT8)(&stp_delimiter[0]), STP_DEL_SIZE);
+				stp_add_to_tx_queue(&stp_delimiter[0], STP_DEL_SIZE);
 			}
 			stp_add_to_tx_queue(mtkstp_header, MTKSTP_HEADER_SIZE);
 

@@ -208,7 +208,7 @@ INT32 osal_dbg_print(const PINT8 str, ...)
 	vsnprintf(tempString, DBG_LOG_STR_SIZE, str, args);
 	va_end(args);
 
-	pr_debug("%s", tempString);
+    printk(KERN_DEBUG "%s",tempString);
 
 	return 0;
 }
@@ -216,13 +216,13 @@ INT32 osal_dbg_print(const PINT8 str, ...)
 
 INT32 osal_dbg_assert(INT32 expr, const PINT8 file, INT32 line)
 {
-	if	(!expr) {
-		pr_warn("%s (%d)\n", file, line);
+	if (!expr) {
+        printk("%s (%d)\n", file, line);
 		/*BUG_ON(!expr); */
 #ifdef CFG_COMMON_GPIO_DBG_PIN
 /* package this part */
 		mt_set_gpio_out(GPIO70, GPIO_OUT_ZERO);
-		pr_debug("toggle GPIO70\n");
+        printk("toggle GPIO70\n");
 		udelay(10);
 		mt_set_gpio_out(GPIO70, GPIO_OUT_ONE);
 #endif
@@ -510,11 +510,11 @@ _osal_inline_ INT32 osal_wait_for_event_bit_set(P_OSAL_EVENT pEvent, PUINT32 pSt
 		ms = pEvent->timeoutValue;
 	    if (ms != 0)
 	    {
-	        return wait_event_interruptible_timeout(pEvent->waitQueue,  test_bit(bitOffset, ((volatile long unsigned int *)pState)), msecs_to_jiffies(ms));
+	        return wait_event_interruptible_timeout(pEvent->waitQueue,  test_bit(bitOffset, pState), msecs_to_jiffies(ms));
 	    }
 	    else
 	    {
-	        return wait_event_interruptible(pEvent->waitQueue,  test_bit(bitOffset, ((volatile long unsigned int *)pState)));
+	        return wait_event_interruptible(pEvent->waitQueue,  test_bit(bitOffset, pState));
 	    }
 	}else
 		return -1;
@@ -529,11 +529,11 @@ _osal_inline_ INT32 osal_wait_for_event_bit_clr(P_OSAL_EVENT pEvent, PUINT32 pSt
 		ms = pEvent->timeoutValue;
 	    if (ms != 0)
 	    {
-	        return wait_event_interruptible_timeout(pEvent->waitQueue,  !test_bit(bitOffset, ((volatile long unsigned int *)pState)), msecs_to_jiffies(ms));
+	        return wait_event_interruptible_timeout(pEvent->waitQueue,  !test_bit(bitOffset, pState), msecs_to_jiffies(ms));
 	    }
 	    else
 	    {
-	        return wait_event_interruptible(pEvent->waitQueue,  !test_bit(bitOffset, ((volatile long unsigned int *)pState)));
+	        return wait_event_interruptible(pEvent->waitQueue,  !test_bit(bitOffset, pState));
 	    }
 	}else
 		return -1;
@@ -565,7 +565,7 @@ _osal_inline_ INT32 osal_bit_op_unlock(P_OSAL_UNSLEEPABLE_LOCK pLock)
 _osal_inline_ INT32 osal_clear_bit(UINT32 bitOffset, P_OSAL_BIT_OP_VAR pData)
 {
 	osal_bit_op_lock(&(pData->opLock));
-	clear_bit(bitOffset, ((volatile long unsigned int *)&pData->data));
+	clear_bit(bitOffset, &pData->data);
 	osal_bit_op_unlock(&(pData->opLock));
 	return 0;
 }
@@ -573,7 +573,7 @@ _osal_inline_ INT32 osal_clear_bit(UINT32 bitOffset, P_OSAL_BIT_OP_VAR pData)
 _osal_inline_ INT32 osal_set_bit(UINT32 bitOffset, P_OSAL_BIT_OP_VAR pData)
 {
 	osal_bit_op_lock(&(pData->opLock));
-	set_bit(bitOffset, ((volatile long unsigned int *)&pData->data));
+	set_bit(bitOffset, &pData->data);
 	osal_bit_op_unlock(&(pData->opLock));
 	return 0;
 }
@@ -582,7 +582,7 @@ _osal_inline_ INT32 osal_test_bit(UINT32 bitOffset, P_OSAL_BIT_OP_VAR pData)
 {
 	UINT32 iRet = 0;
 	osal_bit_op_lock(&(pData->opLock));
-	iRet = test_bit(bitOffset, ((volatile long unsigned int *)&pData->data));
+	iRet = test_bit(bitOffset, &pData->data);
 	osal_bit_op_unlock(&(pData->opLock));
 	return iRet;
 }
@@ -591,7 +591,7 @@ _osal_inline_ INT32 osal_test_and_clear_bit(UINT32 bitOffset, P_OSAL_BIT_OP_VAR 
 {
 	UINT32 iRet = 0;
 	osal_bit_op_lock(&(pData->opLock));
-	iRet = test_and_clear_bit(bitOffset, ((volatile long unsigned int *)&pData->data));
+	iRet = test_and_clear_bit(bitOffset, &pData->data);
 	osal_bit_op_unlock(&(pData->opLock));
 	return iRet;
 
@@ -601,7 +601,7 @@ _osal_inline_ INT32 osal_test_and_set_bit(UINT32 bitOffset, P_OSAL_BIT_OP_VAR pD
 {
 	UINT32 iRet = 0;
 	osal_bit_op_lock(&(pData->opLock));
-	iRet = test_and_set_bit(bitOffset, ((volatile long unsigned int *)&pData->data));
+	iRet = test_and_set_bit(bitOffset, &pData->data);
 	osal_bit_op_unlock(&(pData->opLock));
 	return iRet;
 }
@@ -662,8 +662,8 @@ INT32 _osal_fifo_init(OSAL_FIFO * pFifo, PUINT8 buf, UINT32 size)
 	INT32 ret = -1;
 
 	if (!pFifo || pFifo->pFifoBody) {
-		pr_err("pFifo must be !NULL, pFifo->pFifoBody must be NULL\n");
-		pr_err("pFifo(0x%p), pFifo->pFifoBody(0x%p)\n", pFifo, pFifo->pFifoBody);
+        printk (KERN_ERR "pFifo must be !NULL, pFifo->pFifoBody must be NULL\n");
+        printk (KERN_ERR "pFifo(0x%p), pFifo->pFifoBody(0x%p)\n", pFifo, pFifo->pFifoBody);
 		return -1;
 	}
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 35))
@@ -699,7 +699,7 @@ INT32 _osal_fifo_deinit(OSAL_FIFO * pFifo)
 	struct kfifo *fifo = NULL;
 
 	if (!pFifo || !pFifo->pFifoBody) {
-		pr_err("%s:pFifo = NULL or pFifo->pFifoBody = NULL, error\n", __func__);
+        printk("%s:pFifo = NULL or pFifo->pFifoBody = NULL, error\n", __func__);
 		return -1;
 	}
 
@@ -719,7 +719,7 @@ INT32 _osal_fifo_size(OSAL_FIFO * pFifo)
 	INT32 ret = 0;
 
 	if (!pFifo || !pFifo->pFifoBody) {
-		pr_err("%s:pFifo = NULL or pFifo->pFifoBody = NULL, error\n", __func__);
+        printk("%s:pFifo = NULL or pFifo->pFifoBody = NULL, error\n", __func__);
 		return -1;
 	}
 
@@ -744,7 +744,7 @@ INT32 _osal_fifo_avail_size(OSAL_FIFO * pFifo)
 	INT32 ret = 0;
 
 	if (!pFifo || !pFifo->pFifoBody) {
-		pr_err("%s:pFifo = NULL or pFifo->pFifoBody = NULL, error\n", __func__);
+        printk("%s:pFifo = NULL or pFifo->pFifoBody = NULL, error\n", __func__);
 		return -1;
 	}
 
@@ -768,7 +768,7 @@ INT32 _osal_fifo_len(OSAL_FIFO * pFifo)
 	INT32 ret = 0;
 
 	if (!pFifo || !pFifo->pFifoBody) {
-		pr_err("%s:pFifo = NULL or pFifo->pFifoBody = NULL, error\n", __func__);
+        printk("%s:pFifo = NULL or pFifo->pFifoBody = NULL, error\n", __func__);
 		return -1;
 	}
 
@@ -787,7 +787,7 @@ INT32 _osal_fifo_is_empty(OSAL_FIFO * pFifo)
 	INT32 ret = 0;
 
 	if (!pFifo || !pFifo->pFifoBody) {
-		pr_err("%s:pFifo = NULL or pFifo->pFifoBody = NULL, error\n", __func__);
+        printk("%s:pFifo = NULL or pFifo->pFifoBody = NULL, error\n", __func__);
 		return -1;
 	}
 
@@ -810,7 +810,7 @@ INT32 _osal_fifo_is_full(OSAL_FIFO * pFifo)
 	INT32 ret = 0;
 
 	if (!pFifo || !pFifo->pFifoBody) {
-		pr_err("%s:pFifo = NULL or pFifo->pFifoBody = NULL, error\n", __func__);
+        printk("%s:pFifo = NULL or pFifo->pFifoBody = NULL, error\n", __func__);
 		return -1;
 	}
 
@@ -833,7 +833,7 @@ INT32 _osal_fifo_data_in(OSAL_FIFO * pFifo, const PVOID buf, UINT32 len)
 	INT32 ret = 0;
 
 	if (!pFifo || !pFifo->pFifoBody) {
-		pr_err("%s:pFifo = NULL or pFifo->pFifoBody = NULL, error\n", __func__);
+        printk("%s:pFifo = NULL or pFifo->pFifoBody = NULL, error\n", __func__);
 		return -1;
 	}
 
@@ -847,7 +847,7 @@ INT32 _osal_fifo_data_in(OSAL_FIFO * pFifo, const PVOID buf, UINT32 len)
 #endif
 
 	} else {
-		pr_err("%s: kfifo_in, error, len = %d, _osal_fifo_avail_size = %d, buf=%p\n",
+        printk("%s: kfifo_in, error, len = %d, _osal_fifo_avail_size = %d, buf=%p\n", 
 			__func__, len, _osal_fifo_avail_size(pFifo), buf);
 
 		ret = 0;
@@ -862,7 +862,7 @@ INT32 _osal_fifo_data_out(OSAL_FIFO * pFifo, PVOID buf, UINT32 len)
 	INT32 ret = 0;
 
 	if (!pFifo || !pFifo->pFifoBody) {
-		pr_err("%s:pFifo = NULL or pFifo->pFifoBody = NULL, error\n", __func__);
+        printk("%s:pFifo = NULL or pFifo->pFifoBody = NULL, error\n", __func__);
 		return -1;
 	}
 
@@ -875,7 +875,7 @@ INT32 _osal_fifo_data_out(OSAL_FIFO * pFifo, PVOID buf, UINT32 len)
 		ret = kfifo_out(fifo, buf, len);
 #endif
 	} else {
-		pr_err("%s: kfifo_out, error, len = %d, osal_fifo_len = %d, buf=%p\n",
+        printk("%s: kfifo_out, error, len = %d, osal_fifo_len = %d, buf=%p\n", 
 			__func__, len, _osal_fifo_len(pFifo), buf);
 
 		ret = 0;
@@ -889,7 +889,7 @@ INT32 _osal_fifo_reset(OSAL_FIFO * pFifo)
 	struct kfifo *fifo = NULL;
 
 	if (!pFifo || !pFifo->pFifoBody) {
-		pr_err("%s:pFifo = NULL or pFifo->pFifoBody = NULL, error\n", __func__);
+        printk("%s:pFifo = NULL or pFifo->pFifoBody = NULL, error\n", __func__);
 		return -1;
 	}
 
@@ -905,7 +905,7 @@ INT32 _osal_fifo_reset(OSAL_FIFO * pFifo)
 INT32 osal_fifo_init(P_OSAL_FIFO pFifo, PUINT8 buffer, UINT32 size)
 {
 	if (!pFifo) {
-		pr_err("%s:pFifo = NULL, error\n", __func__);
+        printk("%s:pFifo = NULL, error\n", __func__);
 		return -1;
 	}
 
@@ -921,7 +921,7 @@ INT32 osal_fifo_init(P_OSAL_FIFO pFifo, PUINT8 buffer, UINT32 size)
 	pFifo->FifoReset = _osal_fifo_reset;
 
 	if (NULL != pFifo->pFifoBody) {
-		pr_debug("%s:Becasue pFifo room is avialable, we clear the room and allocate them again.\n", __func__);
+        printk("%s:Becasue pFifo room is avialable, we clear the room and allocate them again.\n", __func__);
 		pFifo->FifoDeInit(pFifo->pFifoBody);
 		pFifo->pFifoBody = NULL;
 	}
@@ -936,7 +936,7 @@ VOID osal_fifo_deinit(P_OSAL_FIFO pFifo)
 	if (pFifo) {
 		pFifo->FifoDeInit(pFifo);
 	} else {
-		pr_err("%s:pFifo = NULL, error\n", __func__);
+        printk("%s:pFifo = NULL, error\n", __func__);
 	}
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 35))
 
@@ -953,7 +953,7 @@ INT32 osal_fifo_reset(P_OSAL_FIFO pFifo)
 	if (pFifo) {
 		return pFifo->FifoReset(pFifo);
 	} else {
-		pr_err("%s:pFifo = NULL, error\n", __func__);
+        printk("%s:pFifo = NULL, error\n", __func__);
 		return -1;
 	}
 }
@@ -963,7 +963,7 @@ UINT32 osal_fifo_in(P_OSAL_FIFO pFifo, PUINT8 buffer, UINT32 size)
 	if (pFifo) {
 		return pFifo->FifoDataIn(pFifo, buffer, size);
 	} else {
-		pr_err("%s:pFifo = NULL, error\n", __func__);
+        printk("%s:pFifo = NULL, error\n", __func__);
 		return 0;
 	}
 }
@@ -973,7 +973,7 @@ UINT32 osal_fifo_out(P_OSAL_FIFO pFifo, PUINT8 buffer, UINT32 size)
 	if (pFifo) {
 		return pFifo->FifoDataOut(pFifo, buffer, size);
 	} else {
-		pr_err("%s:pFifo = NULL, error\n", __func__);
+        printk("%s:pFifo = NULL, error\n", __func__);
 		return 0;
 	}
 }
@@ -983,7 +983,7 @@ UINT32 osal_fifo_len(P_OSAL_FIFO pFifo)
 	if (pFifo) {
 		return pFifo->FifoLen(pFifo);
 	} else {
-		pr_err("%s:pFifo = NULL, error\n", __func__);
+        printk("%s:pFifo = NULL, error\n", __func__);
 		return 0;
 	}
 }
@@ -993,7 +993,7 @@ UINT32 osal_fifo_sz(P_OSAL_FIFO pFifo)
 	if (pFifo) {
 		return pFifo->FifoSz(pFifo);
 	} else {
-		pr_err("%s:pFifo = NULL, error\n", __func__);
+        printk("%s:pFifo = NULL, error\n", __func__);
 		return 0;
 	}
 }
@@ -1003,7 +1003,7 @@ UINT32 osal_fifo_avail(P_OSAL_FIFO pFifo)
 	if (pFifo) {
 		return pFifo->FifoAvailSz(pFifo);
 	} else {
-		pr_err("%s:pFifo = NULL, error\n", __func__);
+        printk("%s:pFifo = NULL, error\n", __func__);
 		return 0;
 	}
 }
@@ -1013,7 +1013,7 @@ UINT32 osal_fifo_is_empty(P_OSAL_FIFO pFifo)
 	if (pFifo) {
 		return pFifo->FifoIsEmpty(pFifo);
 	} else {
-		pr_err("%s:pFifo = NULL, error\n", __func__);
+        printk("%s:pFifo = NULL, error\n", __func__);
 		return 0;
 	}
 }
@@ -1023,7 +1023,7 @@ UINT32 osal_fifo_is_full(P_OSAL_FIFO pFifo)
 	if (pFifo) {
 		return pFifo->FifoIsFull(pFifo);
 	} else {
-		pr_err("%s:pFifo = NULL, error\n", __func__);
+        printk("%s:pFifo = NULL, error\n", __func__);
 		return 0;
 	}
 }
@@ -1187,7 +1187,7 @@ VOID osal_buffer_dump(const PUINT8 buf, const PUINT8 title, const UINT32 len, co
 	INT32 k;
 	UINT32 dump_len;
 
-	pr_warn("start of dump>[%s] len=%d, limit=%d,", title, len, limit);
+    printk("start of dump>[%s] len=%d, limit=%d,", title, len, limit);
 
 	dump_len = ((0 != limit) && (len > limit)) ? limit : len;
 #if 0
@@ -1197,11 +1197,10 @@ VOID osal_buffer_dump(const PUINT8 buf, const PUINT8 title, const UINT32 len, co
 #endif
 
 	for (k = 0; k < dump_len; k++) {
-		if ((k != 0) && (k % 16 == 0))
-			pr_debug("\n");
-		pr_warn("0x%02x ",  buf[k]);
+        if((k != 0) && ( k % 16 == 0))  printk("\n");
+        printk("0x%02x ",  buf[k]);
 	}
-	pr_warn("<end of dump\n");
+    printk("<end of dump\n");
 }
 
 UINT32 osal_op_get_id(P_OSAL_OP pOp)

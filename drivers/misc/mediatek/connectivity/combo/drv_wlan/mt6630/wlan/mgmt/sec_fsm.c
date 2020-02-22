@@ -1,5 +1,5 @@
 /*
-** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/mgmt/sec_fsm.c#1
+** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/mgmt/sec_fsm.c#1 $
 */
 
 /*! \file   "sec_fsm.c"
@@ -9,8 +9,10 @@
     and the path to NORMAL TR, the state machine handle these state transition.
 */
 
+
+
 /*
-** Log: sec_fsm.c
+** $Log: sec_fsm.c $
 **
 ** 03 27 2013 wh.su
 ** [BORA00002446] [MT6630] [Wi-Fi] [Driver] Update the security function code
@@ -115,8 +117,7 @@
  *
  * 03 03 2010 wh.su
  * [BORA00000637][MT6620 Wi-Fi] [Bug] WPA2 pre-authentication timer not correctly initialize
- * Fixed the pre-authentication timer not correctly init issue,
- * and modify the security related callback function prototype.
+ * Fixed the pre-authentication timer not correctly init issue, and modify the security related callback function prototype.
  *
  * 03 01 2010 wh.su
  * [BORA00000605][WIFISYS] Phase3 Integration
@@ -203,7 +204,7 @@ static PUINT_8 apucDebugSecState[SEC_STATE_NUM] = {
 };
 
 /*lint -restore */
-#endif /* DBG */
+#endif				/* DBG */
 
 /*******************************************************************************
 *                                 M A C R O S
@@ -257,16 +258,20 @@ VOID secFsmInit(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prSta)
 		prAisSpecBssInfo->fgCheckEAPoLTxDone = FALSE;
 
 		cnmTimerInitTimer(prAdapter,
-				  &prAdapter->rWifiVar.rAisSpecificBssInfo.rRsnaEAPoLReportTimeoutTimer,
-				  (PFN_MGMT_TIMEOUT_FUNC) secFsmEventEapolTxTimeout, (ULONG) prSta);
+				  &prAdapter->rWifiVar.rAisSpecificBssInfo.
+				  rRsnaEAPoLReportTimeoutTimer,
+				  (PFN_MGMT_TIMEOUT_FUNC) secFsmEventEapolTxTimeout,
+				  (ULONG) prSta);
 
 		cnmTimerInitTimer(prAdapter,
 				  &prAdapter->rWifiVar.rAisSpecificBssInfo.rRsnaBlockTrafficTimer,
-				  (PFN_MGMT_TIMEOUT_FUNC) secFsmEventEndOfCounterMeasure, (ULONG) prSta);
+				  (PFN_MGMT_TIMEOUT_FUNC) secFsmEventEndOfCounterMeasure,
+				  (ULONG) prSta);
 
 	}
 	return;
 }
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -293,11 +298,15 @@ secFsmUnInit(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prSta)
 	/* nicPrivacyRemoveWlanTable(prSta->ucWlanIndex); */
 
 	if (IS_STA_IN_AIS(prSta)) {
-		cnmTimerStopTimer(prAdapter, &prAdapter->rWifiVar.rAisSpecificBssInfo.rRsnaEAPoLReportTimeoutTimer);
-		cnmTimerStopTimer(prAdapter, &prAdapter->rWifiVar.rAisSpecificBssInfo.rRsnaBlockTrafficTimer);
+		cnmTimerStopTimer(prAdapter,
+				  &prAdapter->rWifiVar.rAisSpecificBssInfo.
+				  rRsnaEAPoLReportTimeoutTimer);
+		cnmTimerStopTimer(prAdapter,
+				  &prAdapter->rWifiVar.rAisSpecificBssInfo.rRsnaBlockTrafficTimer);
 	}
 
 }
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -316,6 +325,7 @@ __KAL_INLINE__ VOID secFsmTrans_INIT_to_CHECK_OK(IN P_ADAPTER_T prAdapter, IN P_
 	return;
 }
 
+
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief This function will do action part while in STATE transition of
@@ -326,11 +336,13 @@ __KAL_INLINE__ VOID secFsmTrans_INIT_to_CHECK_OK(IN P_ADAPTER_T prAdapter, IN P_
 * \return - none
 */
 /*----------------------------------------------------------------------------*/
-__KAL_INLINE__ VOID secFsmTrans_INIT_to_INITIATOR_PORT_BLOCKED(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prSta)
+__KAL_INLINE__ VOID
+secFsmTrans_INIT_to_INITIATOR_PORT_BLOCKED(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prSta)
 {
 
 	return;
 }
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -342,10 +354,12 @@ __KAL_INLINE__ VOID secFsmTrans_INIT_to_INITIATOR_PORT_BLOCKED(IN P_ADAPTER_T pr
 * \return - none
 */
 /*----------------------------------------------------------------------------*/
-__KAL_INLINE__ VOID secFsmTrans_INIT_to_RESPONDER_PORT_BLOCKED(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prSta)
+__KAL_INLINE__ VOID
+secFsmTrans_INIT_to_RESPONDER_PORT_BLOCKED(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prSta)
 {
 	return;
 }
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -357,11 +371,13 @@ __KAL_INLINE__ VOID secFsmTrans_INIT_to_RESPONDER_PORT_BLOCKED(IN P_ADAPTER_T pr
 * \return - none
 */
 /*----------------------------------------------------------------------------*/
-__KAL_INLINE__ VOID secFsmTrans_INITIATOR_PORT_BLOCKED_to_CHECK_OK(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prSta)
+__KAL_INLINE__ VOID
+secFsmTrans_INITIATOR_PORT_BLOCKED_to_CHECK_OK(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prSta)
 {
 	secSetPortBlocked(prAdapter, prSta, FALSE);
 	return;
 }
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -373,11 +389,13 @@ __KAL_INLINE__ VOID secFsmTrans_INITIATOR_PORT_BLOCKED_to_CHECK_OK(IN P_ADAPTER_
 * \return - none
 */
 /*----------------------------------------------------------------------------*/
-__KAL_INLINE__ VOID secFsmTrans_RESPONDER_PORT_BLOCKED_to_CHECK_OK(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prSta)
+__KAL_INLINE__ VOID
+secFsmTrans_RESPONDER_PORT_BLOCKED_to_CHECK_OK(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prSta)
 {
 	secSetPortBlocked(prAdapter, prSta, FALSE);
 	return;
 }
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -389,7 +407,8 @@ __KAL_INLINE__ VOID secFsmTrans_RESPONDER_PORT_BLOCKED_to_CHECK_OK(IN P_ADAPTER_
 * \return -
 */
 /*----------------------------------------------------------------------------*/
-__KAL_INLINE__ VOID secFsmTrans_CHECK_OK_to_SEND_EAPOL(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prSta)
+__KAL_INLINE__ VOID
+secFsmTrans_CHECK_OK_to_SEND_EAPOL(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prSta)
 {
 
 	P_AIS_SPECIFIC_BSS_INFO_T prAisBssInfo;
@@ -403,7 +422,7 @@ __KAL_INLINE__ VOID secFsmTrans_CHECK_OK_to_SEND_EAPOL(IN P_ADAPTER_T prAdapter,
 	ASSERT(prAisBssInfo);
 
 	if (!IS_STA_IN_AIS(prSta)) {
-		DBGLOG(RSN, INFO, "Counter Measure should occur at AIS network!!\n");
+		DBGLOG(RSN, INFO, ("Counter Measure should occur at AIS network!!\n"));
 		/* ASSERT(0); */
 		return;
 	}
@@ -417,6 +436,7 @@ __KAL_INLINE__ VOID secFsmTrans_CHECK_OK_to_SEND_EAPOL(IN P_ADAPTER_T prAdapter,
 	return;
 }
 
+
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief This function will do action part while in STATE transition of
@@ -427,23 +447,29 @@ __KAL_INLINE__ VOID secFsmTrans_CHECK_OK_to_SEND_EAPOL(IN P_ADAPTER_T prAdapter,
 * \return - none
 */
 /*----------------------------------------------------------------------------*/
-__KAL_INLINE__ VOID secFsmTrans_SEND_EAPOL_to_SEND_DEAUTH(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prSta)
+__KAL_INLINE__ VOID
+secFsmTrans_SEND_EAPOL_to_SEND_DEAUTH(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prSta)
 {
 
 	if (!IS_STA_IN_AIS(prSta)) {
-		DBGLOG(RSN, INFO, "Counter Measure should occur at AIS network!!\n");
+		DBGLOG(RSN, INFO, ("Counter Measure should occur at AIS network!!\n"));
 		/* ASSERT(0); */
 		return;
 	}
 
 	/* Compose deauth frame to AP, a call back function for tx done */
 	if (authSendDeauthFrame(prAdapter,
-				NULL, prSta, (P_SW_RFB_T) NULL, REASON_CODE_MIC_FAILURE, (PFN_TX_DONE_HANDLER) NULL
+				NULL,
+				prSta,
+				(P_SW_RFB_T) NULL,
+				REASON_CODE_MIC_FAILURE,
+				(PFN_TX_DONE_HANDLER) NULL
 				/* secFsmEventDeauthTxDone left upper layer handle the 60 timer */)
 	    != WLAN_STATUS_SUCCESS) {
 		ASSERT(FALSE);
 	}
 }
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -455,13 +481,14 @@ __KAL_INLINE__ VOID secFsmTrans_SEND_EAPOL_to_SEND_DEAUTH(IN P_ADAPTER_T prAdapt
 * \return -
 */
 /*----------------------------------------------------------------------------*/
-__KAL_INLINE__ VOID secFsmTrans_SEND_DEAUTH_to_COUNTERMEASURE(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prSta)
+__KAL_INLINE__ VOID
+secFsmTrans_SEND_DEAUTH_to_COUNTERMEASURE(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prSta)
 {
 	ASSERT(prAdapter);
 	ASSERT(prSta);
 
 	if (!IS_STA_IN_AIS(prSta)) {
-		DBGLOG(RSN, INFO, "Counter Measure should occur at AIS network!!\n");
+		DBGLOG(RSN, INFO, ("Counter Measure should occur at AIS network!!\n"));
 		/* ASSERT(0); */
 		return;
 	}
@@ -472,6 +499,7 @@ __KAL_INLINE__ VOID secFsmTrans_SEND_DEAUTH_to_COUNTERMEASURE(IN P_ADAPTER_T prA
 	return;
 }
 
+
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief This function will do action part while in STATE transition of
@@ -482,7 +510,8 @@ __KAL_INLINE__ VOID secFsmTrans_SEND_DEAUTH_to_COUNTERMEASURE(IN P_ADAPTER_T prA
 * \return -
 */
 /*----------------------------------------------------------------------------*/
-__KAL_INLINE__ VOID secFsmTrans_COUNTERMEASURE_to_INIT(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prSta)
+__KAL_INLINE__ VOID
+secFsmTrans_COUNTERMEASURE_to_INIT(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prSta)
 {
 
 	/* Clear the counter measure flag */
@@ -516,12 +545,14 @@ VOID secFsmSteps(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prSta, IN ENUM_SEC_
 
 		/* Do entering Next State */
 #if DBG
-		DBGLOG(RSN, STATE, "\n" MACSTR " TRANSITION: [%s] -> [%s]\n\n",
+		DBGLOG(RSN, STATE, ("\n" MACSTR " TRANSITION: [%s] -> [%s]\n\n",
 				    MAC2STR(prSta->aucMacAddr),
-				    apucDebugSecState[prSecInfo->eCurrentState], apucDebugSecState[eNextState];
+				    apucDebugSecState[prSecInfo->eCurrentState],
+				    apucDebugSecState[eNextState]));
 #else
-		DBGLOG(RSN, STATE, "\n" MACSTR " [%d] TRANSITION: [%d] -> [%d]\n\n",
-				    MAC2STR(prSta->aucMacAddr), DBG_RSN_IDX, prSecInfo->eCurrentState, eNextState;
+		DBGLOG(RSN, STATE, ("\n" MACSTR " [%d] TRANSITION: [%d] -> [%d]\n\n",
+				    MAC2STR(prSta->aucMacAddr),
+				    DBG_RSN_IDX, prSecInfo->eCurrentState, eNextState));
 #endif
 		prSecInfo->eCurrentState = eNextState;
 
@@ -554,6 +585,7 @@ VOID secFsmSteps(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prSta, IN ENUM_SEC_
 
 }
 
+
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief This function will do initialization of Security FSM and all variables in
@@ -570,7 +602,7 @@ VOID secFsmEventStart(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prSta)
 	BOOLEAN fgIsTransition = (BOOLEAN) FALSE;
 	ENUM_SEC_STATE_T eNextState;
 
-	DBGLOG(RSN, TRACE, "secFsmRunEventStart\n");
+	DBGLOG(RSN, TRACE, ("secFsmRunEventStart\n"));
 
 	ASSERT(prSta);
 
@@ -580,8 +612,8 @@ VOID secFsmEventStart(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prSta)
 	if (!IS_STA_IN_AIS(prSta))
 		return;
 
-	DBGLOG(RSN, TRACE, "secFsmRunEventStart for sta " MACSTR " bss %d\n",
-			    MAC2STR(prSta->aucMacAddr), prSta->ucBssIndex;
+	DBGLOG(RSN, TRACE, ("secFsmRunEventStart for sta " MACSTR " bss %d\n",
+			    MAC2STR(prSta->aucMacAddr), prSta->ucBssIndex));
 
 	prSecInfo = (P_SEC_INFO_T) &prSta->rSecInfo;
 
@@ -610,23 +642,27 @@ VOID secFsmEventStart(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prSta)
 	}
 #if CFG_ENABLE_WIFI_DIRECT || CFG_ENABLE_BT_OVER_WIFI
 #if CFG_ENABLE_WIFI_DIRECT && CFG_ENABLE_BT_OVER_WIFI
-	else if ((prSta->eStaType == STA_TYPE_BOW_CLIENT) || (prSta->eStaType == STA_TYPE_P2P_GC)) {
+	else if ((prSta->eStaType == STA_TYPE_BOW_CLIENT) || (prSta->eStaType == STA_TYPE_P2P_GC))
 #elif CFG_ENABLE_WIFI_DIRECT
-	else if (prSta->eStaType == STA_TYPE_P2P_GC) {
+	else if (prSta->eStaType == STA_TYPE_P2P_GC)
 #elif CFG_ENABLE_BT_OVER_WIFI
-	else if (prSta->eStaType == STA_TYPE_BOW_CLIENT) {
+	else if (prSta->eStaType == STA_TYPE_BOW_CLIENT)
 #endif
+	{
 		SEC_STATE_TRANSITION(prAdapter, prSta, INIT, RESPONDER_PORT_BLOCKED);
 	}
 #endif
-	else
+	else {
 		SEC_STATE_TRANSITION(prAdapter, prSta, INIT, INITIATOR_PORT_BLOCKED);
+	}
 #endif
-	if (prSecInfo->eCurrentState != eNextState)
+	if (prSecInfo->eCurrentState != eNextState) {
 		secFsmSteps(prAdapter, prSta, eNextState);
+	}
 
 	return;
 }				/* secFsmRunEventStart */
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -643,10 +679,10 @@ VOID secFsmEventAbort(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prSta)
 {
 	P_SEC_INFO_T prSecInfo;
 
-	DBGLOG(RSN, TRACE, "secFsmEventAbort for sta " MACSTR " bss %d\n",
-			    MAC2STR(prSta->aucMacAddr), prSta->ucBssIndex;
+	DBGLOG(RSN, TRACE, ("secFsmEventAbort for sta " MACSTR " bss %d\n",
+			    MAC2STR(prSta->aucMacAddr), prSta->ucBssIndex));
 
-	ASSERT(prSta;
+	ASSERT(prSta);
 
 	if (!prSta)
 		return;
@@ -669,14 +705,14 @@ VOID secFsmEventAbort(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prSta)
 
 		if (prSecInfo->eCurrentState == SEC_STATE_SEND_EAPOL) {
 			if (prAdapter->rWifiVar.rAisSpecificBssInfo.fgCheckEAPoLTxDone == FALSE) {
-				DBGLOG(RSN, TRACE, "EAPOL STATE not match the flag\n");
-				/* cnmTimerStopTimer(prAdapter,
-				 * &prAdapter->rWifiVar.rAisSpecificBssInfo.rRsnaEAPoLReportTimeoutTimer); */
+				DBGLOG(RSN, TRACE, ("EAPOL STATE not match the flag\n"));
+				/* cnmTimerStopTimer(prAdapter, &prAdapter->rWifiVar.rAisSpecificBssInfo.rRsnaEAPoLReportTimeoutTimer); */
 			}
 		}
 	}
 	prSecInfo->eCurrentState = SEC_STATE_INIT;
 }
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -701,10 +737,11 @@ VOID secFsmEvent2ndEapolTx(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prSta)
 	eNextState = prSecInfo->eCurrentState;
 
 #if DBG
-	DBGLOG(RSN, TRACE, MACSTR " Sec state %s\n", MAC2STR(prSta->aucMacAddr),
-			    apucDebugSecState[prSecInfo->eCurrentState]);
+	DBGLOG(RSN, TRACE, (MACSTR " Sec state %s\n", MAC2STR(prSta->aucMacAddr),
+			    apucDebugSecState[prSecInfo->eCurrentState]));
 #else
-	DBGLOG(RSN, TRACE, MACSTR " Sec state [%d]\n", MAC2STR(prSta->aucMacAddr), prSecInfo->eCurrentState);
+	DBGLOG(RSN, TRACE,
+	       (MACSTR " Sec state [%d]\n", MAC2STR(prSta->aucMacAddr), prSecInfo->eCurrentState));
 #endif
 
 	switch (prSecInfo->eCurrentState) {
@@ -714,19 +751,22 @@ VOID secFsmEvent2ndEapolTx(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prSta)
 		break;
 	default:
 #if DBG
-		DBGLOG(RSN, WARN, "Rcv 2nd EAPoL at %s\n", apucDebugSecState[prSecInfo->eCurrentState]);
+		DBGLOG(RSN, WARN,
+		       ("Rcv 2nd EAPoL at %s\n", apucDebugSecState[prSecInfo->eCurrentState]));
 #else
-		DBGLOG(RSN, WARN, "Rcv 2nd EAPoL at [%d]\n", prSecInfo->eCurrentState);
+		DBGLOG(RSN, WARN, ("Rcv 2nd EAPoL at [%d]\n", prSecInfo->eCurrentState));
 #endif
 		break;
 	}
 
-	if (prSecInfo->eCurrentState != eNextState)
+	if (prSecInfo->eCurrentState != eNextState) {
 		secFsmSteps(prAdapter, prSta, eNextState);
+	}
 
 	return;
 
 }				/* secFsmRunEvent2ndEapolTx */
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -752,10 +792,11 @@ VOID secFsmEvent4ndEapolTxDone(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prSta
 	eNextState = prSecInfo->eCurrentState;
 
 #if DBG
-	DBGLOG(RSN, TRACE, MACSTR " Sec state %s\n", MAC2STR(prSta->aucMacAddr),
-			    apucDebugSecState[prSecInfo->eCurrentState]);
+	DBGLOG(RSN, TRACE, (MACSTR " Sec state %s\n", MAC2STR(prSta->aucMacAddr),
+			    apucDebugSecState[prSecInfo->eCurrentState]));
 #else
-	DBGLOG(RSN, TRACE, MACSTR " Sec state [%d]\n", MAC2STR(prSta->aucMacAddr), prSecInfo->eCurrentState);
+	DBGLOG(RSN, TRACE,
+	       (MACSTR " Sec state [%d]\n", MAC2STR(prSta->aucMacAddr), prSecInfo->eCurrentState));
 #endif
 
 	switch (prSecInfo->eCurrentState) {
@@ -773,25 +814,30 @@ VOID secFsmEvent4ndEapolTxDone(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prSta
 			prSecInfo->fgKeyStored = FALSE;
 			prSta->fgTransmitKeyExist = TRUE;
 		}
-		if (prSecInfo->eCurrentState == SEC_STATE_INITIATOR_PORT_BLOCKED)
+		if (prSecInfo->eCurrentState == SEC_STATE_INITIATOR_PORT_BLOCKED) {
 			SEC_STATE_TRANSITION(prAdapter, prSta, INITIATOR_PORT_BLOCKED, CHECK_OK);
+		}
 		break;
 	default:
 
 #if DBG
-		DBGLOG(RSN, WARN, "Rcv thh EAPoL Tx done at %s\n", apucDebugSecState[prSecInfo->eCurrentState]);
+		DBGLOG(RSN, WARN,
+		       ("Rcv thh EAPoL Tx done at %s\n",
+			apucDebugSecState[prSecInfo->eCurrentState]));
 #else
-		DBGLOG(RSN, WARN, "Rcv thh EAPoL Tx done at [%d]\n", prSecInfo->eCurrentState);
+		DBGLOG(RSN, WARN, ("Rcv thh EAPoL Tx done at [%d]\n", prSecInfo->eCurrentState));
 #endif
 		break;
 	}
 
-	if (prSecInfo->eCurrentState != eNextState)
+	if (prSecInfo->eCurrentState != eNextState) {
 		secFsmSteps(prAdapter, prSta, eNextState);
+	}
 
 	return;
 
 }				/* secFsmRunEvent4ndEapolTx */
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -817,10 +863,11 @@ BOOLEAN secFsmEventPTKInstalled(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prSt
 		return TRUE;	/* Not PTK */
 
 #if DBG
-	DBGLOG(RSN, TRACE, MACSTR " Sec state %s\n", MAC2STR(prSta->aucMacAddr),
-			    apucDebugSecState[prSecInfo->eCurrentState]);
+	DBGLOG(RSN, TRACE, (MACSTR " Sec state %s\n", MAC2STR(prSta->aucMacAddr),
+			    apucDebugSecState[prSecInfo->eCurrentState]));
 #else
-	DBGLOG(RSN, TRACE, MACSTR " Sec state [%d]\n", MAC2STR(prSta->aucMacAddr), prSecInfo->eCurrentState);
+	DBGLOG(RSN, TRACE,
+	       (MACSTR " Sec state [%d]\n", MAC2STR(prSta->aucMacAddr), prSecInfo->eCurrentState));
 #endif
 
 	eNextState = prSecInfo->eCurrentState;
@@ -831,13 +878,16 @@ BOOLEAN secFsmEventPTKInstalled(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prSt
 		break;
 
 	case SEC_STATE_INITIATOR_PORT_BLOCKED:
-		if (prSecInfo->fg2nd1xSend == FALSE)
+		if (prSecInfo->fg2nd1xSend) {
+		} else {
 			SEC_STATE_TRANSITION(prAdapter, prSta, INITIATOR_PORT_BLOCKED, CHECK_OK);
+		}
 		break;
 
 	case SEC_STATE_RESPONDER_PORT_BLOCKED:
 		SEC_STATE_TRANSITION(prAdapter, prSta, RESPONDER_PORT_BLOCKED, CHECK_OK);
 		break;
+
 
 	case SEC_STATE_CHECK_OK:
 		break;
@@ -847,12 +897,14 @@ BOOLEAN secFsmEventPTKInstalled(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prSt
 		break;
 	}
 
-	if (prSecInfo->eCurrentState != eNextState)
+	if (prSecInfo->eCurrentState != eNextState) {
 		secFsmSteps(prAdapter, prSta, eNextState);
+	}
 
 	return fgStatus;
 
 }				/* end of secFsmRunEventPTKInstalled() */
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -874,7 +926,7 @@ VOID secFsmEventStartCounterMeasure(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T 
 	ASSERT(prSta);
 
 	if (!IS_STA_IN_AIS(prSta)) {
-		DBGLOG(RSN, INFO, "Counter Measure should occur at AIS network!!\n");
+		DBGLOG(RSN, INFO, ("Counter Measure should occur at AIS network!!\n"));
 		/* ASSERT(0); */
 		return;
 	}
@@ -884,10 +936,11 @@ VOID secFsmEventStartCounterMeasure(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T 
 	eNextState = prSecInfo->eCurrentState;
 
 #if DBG
-	DBGLOG(RSN, TRACE, MACSTR " Sec state %s\n", MAC2STR(prSta->aucMacAddr),
-			    apucDebugSecState[prSecInfo->eCurrentState]);
+	DBGLOG(RSN, TRACE, (MACSTR " Sec state %s\n", MAC2STR(prSta->aucMacAddr),
+			    apucDebugSecState[prSecInfo->eCurrentState]));
 #else
-	DBGLOG(RSN, TRACE, MACSTR " Sec state [%d]\n", MAC2STR(prSta->aucMacAddr), prSecInfo->eCurrentState);
+	DBGLOG(RSN, TRACE,
+	       (MACSTR " Sec state [%d]\n", MAC2STR(prSta->aucMacAddr), prSecInfo->eCurrentState));
 #endif
 
 	prAdapter->rWifiVar.rAisSpecificBssInfo.u4RsnaLastMICFailTime = 0;
@@ -907,12 +960,14 @@ VOID secFsmEventStartCounterMeasure(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T 
 	}
 
 	/* Call arbFsmSteps() when we are going to change ARB STATE */
-	if (prSecInfo->eCurrentState != eNextState)
+	if (prSecInfo->eCurrentState != eNextState) {
 		secFsmSteps(prAdapter, prSta, eNextState);
+	}
 
 	return;
 
 }				/* secFsmRunEventStartCounterMeasure */
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -924,7 +979,8 @@ VOID secFsmEventStartCounterMeasure(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T 
 */
 /*----------------------------------------------------------------------------*/
 VOID
-secFsmEventEapolTxDone(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prStaRec, IN ENUM_TX_RESULT_CODE_T rTxDoneStatus)
+secFsmEventEapolTxDone(IN P_ADAPTER_T prAdapter,
+		       IN P_STA_RECORD_T prStaRec, IN ENUM_TX_RESULT_CODE_T rTxDoneStatus)
 {
 	P_SEC_INFO_T prSecInfo;
 	ENUM_SEC_STATE_T eNextState;
@@ -936,13 +992,13 @@ secFsmEventEapolTxDone(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prStaRec, IN 
 	ASSERT(prStaRec);
 
 	if (rTxDoneStatus != TX_RESULT_SUCCESS) {
-		DBGLOG(RSN, INFO, "Error EAPoL fram fail to send!!\n");
+		DBGLOG(RSN, INFO, ("Error EAPoL fram fail to send!!\n"));
 		/* ASSERT(0); */
 		return;
 	}
 
 	if (!IS_STA_IN_AIS(prStaRec)) {
-		DBGLOG(RSN, INFO, "Counter Measure should occur at AIS network!!\n");
+		DBGLOG(RSN, INFO, ("Counter Measure should occur at AIS network!!\n"));
 		/* ASSERT(0); */
 		return;
 	}
@@ -955,16 +1011,19 @@ secFsmEventEapolTxDone(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prStaRec, IN 
 	eNextState = prSecInfo->eCurrentState;
 
 #if DBG
-	DBGLOG(RSN, TRACE, MACSTR " Sec state %s\n", MAC2STR(prStaRec->aucMacAddr),
-			    apucDebugSecState[prSecInfo->eCurrentState]);
+	DBGLOG(RSN, TRACE, (MACSTR " Sec state %s\n", MAC2STR(prStaRec->aucMacAddr),
+			    apucDebugSecState[prSecInfo->eCurrentState]));
 #else
-	DBGLOG(RSN, TRACE, MACSTR " Sec state [%d]\n", MAC2STR(prStaRec->aucMacAddr), prSecInfo->eCurrentState);
+	DBGLOG(RSN, TRACE,
+	       (MACSTR " Sec state [%d]\n", MAC2STR(prStaRec->aucMacAddr),
+		prSecInfo->eCurrentState));
 #endif
 
 	switch (prSecInfo->eCurrentState) {
 	case SEC_STATE_SEND_EAPOL:
-		if (prAisBssInfo->fgCheckEAPoLTxDone == FALSE)
+		if (prAisBssInfo->fgCheckEAPoLTxDone == FALSE) {
 			ASSERT(0);
+		}
 
 		prAisBssInfo->fgCheckEAPoLTxDone = FALSE;
 		/* cnmTimerStopTimer(prAdapter, &prAisBssInfo->rRsnaEAPoLReportTimeoutTimer); */
@@ -975,12 +1034,14 @@ secFsmEventEapolTxDone(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prStaRec, IN 
 		break;
 	}
 
-	if (prSecInfo->eCurrentState != eNextState)
+	if (prSecInfo->eCurrentState != eNextState) {
 		secFsmSteps(prAdapter, prStaRec, eNextState);
+	}
 
 	return;
 
 }				/* secFsmRunEventEapolTxDone */
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -995,7 +1056,8 @@ secFsmEventEapolTxDone(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prStaRec, IN 
 */
 /*----------------------------------------------------------------------------*/
 VOID
-secFsmEventDeauthTxDone(IN P_ADAPTER_T prAdapter, IN P_MSDU_INFO_T prMsduInfo, IN ENUM_TX_RESULT_CODE_T rTxDoneStatus)
+secFsmEventDeauthTxDone(IN P_ADAPTER_T prAdapter,
+			IN P_MSDU_INFO_T prMsduInfo, IN ENUM_TX_RESULT_CODE_T rTxDoneStatus)
 {
 	P_STA_RECORD_T prStaRec;
 	P_SEC_INFO_T prSecInfo;
@@ -1014,7 +1076,7 @@ secFsmEventDeauthTxDone(IN P_ADAPTER_T prAdapter, IN P_MSDU_INFO_T prMsduInfo, I
 		return;
 
 	if (!IS_STA_IN_AIS(prStaRec)) {
-		DBGLOG(RSN, INFO, "Counter Measure should occur at AIS network!!\n");
+		DBGLOG(RSN, INFO, ("Counter Measure should occur at AIS network!!\n"));
 		/* ASSERT(0); */
 		return;
 	}
@@ -1022,16 +1084,18 @@ secFsmEventDeauthTxDone(IN P_ADAPTER_T prAdapter, IN P_MSDU_INFO_T prMsduInfo, I
 	prSecInfo = (P_SEC_INFO_T) &prStaRec->rSecInfo;
 
 #if DBG
-	DBGLOG(RSN, TRACE, MACSTR " Sec state %s\n", MAC2STR(prStaRec->aucMacAddr),
-			    apucDebugSecState[prSecInfo->eCurrentState]);
+	DBGLOG(RSN, TRACE, (MACSTR " Sec state %s\n", MAC2STR(prStaRec->aucMacAddr),
+			    apucDebugSecState[prSecInfo->eCurrentState]));
 #else
-	DBGLOG(RSN, TRACE, MACSTR " Sec state [%d]\n", MAC2STR(prStaRec->aucMacAddr), prSecInfo->eCurrentState);
+	DBGLOG(RSN, TRACE,
+	       (MACSTR " Sec state [%d]\n", MAC2STR(prStaRec->aucMacAddr),
+		prSecInfo->eCurrentState));
 #endif
 
 	switch (prSecInfo->eCurrentState) {
 	case SEC_STATE_SEND_DEAUTH:
 
-		DBGLOG(RSN, TRACE, "Set timer %d\n", COUNTER_MEASURE_TIMEOUT_INTERVAL_SEC);
+		DBGLOG(RSN, TRACE, ("Set timer %d\n", COUNTER_MEASURE_TIMEOUT_INTERVAL_SEC));
 
 		SEC_STATE_TRANSITION(prAdapter, prStaRec, SEND_DEAUTH, COUNTERMEASURE);
 
@@ -1044,6 +1108,7 @@ secFsmEventDeauthTxDone(IN P_ADAPTER_T prAdapter, IN P_MSDU_INFO_T prMsduInfo, I
 
 	return;
 }				/* secFsmRunEventDeauthTxDone */
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1071,6 +1136,7 @@ VOID secFsmEventEapolTxTimeout(IN P_ADAPTER_T prAdapter, IN ULONG ulParamPtr)
 
 }				/* secFsmEventEapolTxTimeout */
 
+
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief This function will stop the counterMeasure duration.
@@ -1094,7 +1160,7 @@ VOID secFsmEventEndOfCounterMeasure(IN P_ADAPTER_T prAdapter, ULONG ulParamPtr)
 	ASSERT(prSta);
 
 	if (!IS_STA_IN_AIS(prSta)) {
-		DBGLOG(RSN, INFO, "Counter Measure should occur at AIS network!!\n");
+		DBGLOG(RSN, INFO, ("Counter Measure should occur at AIS network!!\n"));
 		/* ASSERT(0); */
 		return;
 	}
@@ -1103,10 +1169,11 @@ VOID secFsmEventEndOfCounterMeasure(IN P_ADAPTER_T prAdapter, ULONG ulParamPtr)
 	eNextState = prSecInfo->eCurrentState;
 
 #if DBG
-	DBGLOG(RSN, TRACE, MACSTR " Sec state %s\n", MAC2STR(prSta->aucMacAddr),
-			    apucDebugSecState[prSecInfo->eCurrentState]);
+	DBGLOG(RSN, TRACE, (MACSTR " Sec state %s\n", MAC2STR(prSta->aucMacAddr),
+			    apucDebugSecState[prSecInfo->eCurrentState]));
 #else
-	DBGLOG(RSN, TRACE, MACSTR " Sec state [%d]\n", MAC2STR(prSta->aucMacAddr), prSecInfo->eCurrentState);
+	DBGLOG(RSN, TRACE,
+	       (MACSTR " Sec state [%d]\n", MAC2STR(prSta->aucMacAddr), prSecInfo->eCurrentState));
 #endif
 
 	switch (prSecInfo->eCurrentState) {
@@ -1123,8 +1190,9 @@ VOID secFsmEventEndOfCounterMeasure(IN P_ADAPTER_T prAdapter, ULONG ulParamPtr)
 	}
 
 	/* Call arbFsmSteps() when we are going to change ARB STATE */
-	if (prSecInfo->eCurrentState != eNextState)
+	if (prSecInfo->eCurrentState != eNextState) {
 		secFsmSteps(prAdapter, prSta, eNextState);
+	}
 
 	return;
 }				/* end of secFsmRunEventEndOfCounterMeasure */

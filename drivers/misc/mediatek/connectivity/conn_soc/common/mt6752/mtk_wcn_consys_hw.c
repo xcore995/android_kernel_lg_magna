@@ -112,10 +112,10 @@ static INT32 mtk_wcn_consys_jtag_set_for_mcu(VOID)
 	WMT_PLAT_INFO_FUNC("WCN jtag_set_for_mcu start...\n");
     jtag_addr1 = ioremap(JTAG_ADDR1_BASE, 0x5000);
     if (jtag_addr1 == 0) {
-		pr_warn("remap jtag_addr1 fail!\n");
+        printk("remap jtag_addr1 fail!\n");
         return iRet;
     }
-	pr_warn("jtag_addr1 = 0x%p\n", jtag_addr1);
+    printk("jtag_addr1 = 0x%p\n", jtag_addr1);
 
 	JTAG1_REG_WRITE(0x100053c4, 0x11111100);
 	JTAG1_REG_WRITE(0x100053d4, 0x00111111);
@@ -142,13 +142,13 @@ static INT32 mtk_wcn_consys_jtag_set_for_mcu(VOID)
 		
 		remap_addr1 = ioremap(JTAG_ADDR1_BASE, 0x1000);
 		if (remap_addr1 == 0) {
-			pr_warn("remap jtag_addr1 fail!\n");
+			printk("remap jtag_addr1 fail!\n");
 			return -1;
 		}
 		
 		remap_addr2 = ioremap(JTAG_ADDR2_BASE, 0x100);
 		if (remap_addr2 == 0) {
-			pr_warn("remap jtag_addr2 fail!\n");
+			printk("remap jtag_addr2 fail!\n");
 			return -1;
 		}
 
@@ -838,13 +838,7 @@ INT32 mtk_wcn_consys_hw_restore(struct device *device)
 		addrPhy = (gConEmiPhyBase & 0xFFF00000) >> 20;
 
 		/*enable consys to ap emi remapping bit12*/
-#ifdef CONFIG_MTK_LM_MODE
-		/*if 4G memory disabled, EMI base address need -0x40000000*/
-		if (0 == enable_4G())
-			addrPhy -= 0x400;
-#else
-		addrPhy -= 0x400;
-#endif
+		addrPhy -= 0x400;/*Gavin ??*/
 		addrPhy = addrPhy | 0x1000;
 
 		CONSYS_REG_WRITE(conn_reg.topckgen_base + CONSYS_EMI_MAPPING_OFFSET, \
@@ -947,13 +941,7 @@ INT32 mtk_wcn_consys_hw_init()
 		addrPhy = (gConEmiPhyBase & 0xFFF00000) >> 20;
 
 		/*enable consys to ap emi remapping bit12*/
-#ifdef CONFIG_MTK_LM_MODE
-		/*if 4G memory disabled, EMI base address need -0x40000000*/
-		if (0 == enable_4G())
-			addrPhy -= 0x400;
-#else
-		addrPhy -= 0x400;
-#endif
+		addrPhy -= 0x400;/*Gavin ??*/
 		addrPhy = addrPhy | 0x1000;
 
 		CONSYS_REG_WRITE(conn_reg.topckgen_base + CONSYS_EMI_MAPPING_OFFSET, \

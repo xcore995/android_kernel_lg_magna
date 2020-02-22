@@ -1,5 +1,5 @@
 /*
-** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/windows/include/gl_os.h#1
+** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/windows/include/gl_os.h#1 $
 */
 
 /*! \file   gl_os.h
@@ -11,8 +11,10 @@
     also list down here.
 */
 
+
+
 /*
-** Log: gl_os.h
+** $Log: gl_os.h $
 **
 ** 07 29 2013 cp.wu
 ** [BORA00002725] [MT6630][Wi-Fi] Add MGMT TX/RX support for Linux port
@@ -53,8 +55,7 @@
  * Refine the HT rate disallow TKIP pairwise cipher .
  *
  * 10 26 2010 cp.wu
- * [WCXRP00000056] [MT6620 Wi-Fi][Driver] NVRAM implementation with
- * Version Check[WCXRP00000137] [MT6620 Wi-Fi] [FW] Support NIC capability query command
+ * [WCXRP00000056] [MT6620 Wi-Fi][Driver] NVRAM implementation with Version Check[WCXRP00000137] [MT6620 Wi-Fi] [FW] Support NIC capability query command
  * 1) update NVRAM content template to ver 1.02
  * 2) add compile option for querying NIC capability (default: off)
  * 3) modify AIS 5GHz support to run-time option, which could be turned on by registry or NVRAM setting
@@ -142,9 +143,9 @@
  * 01 27 2010 cp.wu
  * [WPD00001943]Create WiFi test driver framework on WinXP
  * 1. eliminate improper variable in rHifInfo
- * 2. block TX/ordinary OID when RF test mode is engaged
- * 3. wait until firmware finish operation when entering into and leaving from RF test mode
- * 4. correct some HAL implementation
+ *  *  *  *  *  *  *  *  *  *  *  *  *  *  * 2. block TX/ordinary OID when RF test mode is engaged
+ *  *  *  *  *  *  *  *  *  *  *  *  *  *  * 3. wait until firmware finish operation when entering into and leaving from RF test mode
+ *  *  *  *  *  *  *  *  *  *  *  *  *  *  * 4. correct some HAL implementation
  *
  * 01 26 2010 cp.wu
  * [WPD00001943]Create WiFi test driver framework on WinXP
@@ -207,6 +208,7 @@
 **
 */
 
+
 #ifndef _GL_OS_H
 #define _GL_OS_H
 
@@ -214,6 +216,7 @@
 *                         C O M P I L E R   F L A G S
 ********************************************************************************
 */
+
 
 /*******************************************************************************
 *                    E X T E R N A L   R E F E R E N C E S
@@ -223,7 +226,7 @@
 
 LINT_EXT_HEADER_BEGIN
 #include <ndis.h>
-LINT_EXT_HEADER_END
+    LINT_EXT_HEADER_END
 #include "version.h"
 #include "gl_typedef.h"
 #include "typedef.h"
@@ -231,9 +234,9 @@ LINT_EXT_HEADER_END
 #include "debug.h"
 #include "CFG_Wifi_File.h"
 #include "gl_kal.h"
-LINT_EXT_HEADER_BEGIN
+    LINT_EXT_HEADER_BEGIN
 #include "hif.h"
-LINT_EXT_HEADER_END
+    LINT_EXT_HEADER_END
 #include "wlan_lib.h"
 #include "gl_req.h"
 #include "wlan_oid.h"
@@ -256,6 +259,7 @@ extern BOOLEAN fgIsBusAccessFailed;
 #define GLUE_FLAG_HALT                          0x00000100	/* NIC is going to halt            */
 #define GLUE_FLAG_RESET                         0x00000200	/* NIC is going to reset           */
 #define GLUE_FLAG_TIMEOUT                       0x00000400	/* NIC response timeout            */
+
 
 /* Error log codes */
 /* NDIS_ERROR_CODE_ADAPTER_NOT_FOUND (Event ID: 5003) */
@@ -299,8 +303,10 @@ extern BOOLEAN fgIsBusAccessFailed;
 #define ERRLOG_NO_MEMORY_RESOURCE               0x00000605L
 #define ERRLOG_REG_IO_PORT_RANGE                0x00000606L
 
+
 #define NUM_SUPPORTED_OIDS      (sizeof(arWlanOidReqTable) / sizeof(WLAN_REQ_ENTRY))
 #define NUM_REG_PARAMS          (sizeof(arWlanRegTable) / sizeof(WLAN_REG_ENTRY_T))
+
 
 #define ETHERNET_HEADER_SZ                      14
 #define ETHERNET_MAX_PKT_SZ                     1514
@@ -333,6 +339,7 @@ extern BOOLEAN fgIsBusAccessFailed;
 
 #define USER_PRIORITY_DEFAULT                   0
 
+
 /* 802.2 LLC/SNAP */
 #define ETH_LLC_OFFSET                          (ETH_HLEN)
 #define ETH_LLC_LEN                             3
@@ -354,9 +361,10 @@ extern BOOLEAN fgIsBusAccessFailed;
 ********************************************************************************
 */
 LINT_EXT_HEADER_BEGIN
-typedef WLAN_STATUS(*PFN_OID_HANDLER_FUNC_REQ) (IN PVOID prAdapter,
-						IN OUT PVOID pvBuf,
-						IN UINT_32 u4BufLen, OUT PUINT_32 pu4OutInfoLen);
+    typedef WLAN_STATUS(*PFN_OID_HANDLER_FUNC_REQ) (IN PVOID prAdapter,
+						    IN OUT PVOID pvBuf,
+						    IN UINT_32 u4BufLen,
+						    OUT PUINT_32 pu4OutInfoLen);
 
 typedef enum _ENUM_OID_METHOD_T {
 	ENUM_OID_GLUE_ONLY,
@@ -392,6 +400,7 @@ typedef struct _WLAN_REQ_ENTRY {
 	PFN_OID_HANDLER_FUNC_REQ pfOidSetHandler;
 } WLAN_REQ_ENTRY, *P_WLAN_REQ_ENTRY;
 
+
 #if CFG_TCP_IP_CHKSUM_OFFLOAD
 /* The offload capabilities of the miniport */
 typedef struct _NIC_TASK_OFFLOAD {
@@ -400,6 +409,7 @@ typedef struct _NIC_TASK_OFFLOAD {
 	UINT_32 IpSecOffload:1;
 
 } NIC_TASK_OFFLOAD;
+
 
 /* Checksum offload capabilities */
 typedef struct _NIC_CHECKSUM_OFFLOAD {
@@ -411,7 +421,7 @@ typedef struct _NIC_CHECKSUM_OFFLOAD {
 	UINT_32 DoRcvIpChecksum:1;
 
 } NIC_CHECKSUM_OFFLOAD;
-#endif /* CFG_TCP_IP_CHKSUM_OFFLOAD */
+#endif				/* CFG_TCP_IP_CHKSUM_OFFLOAD */
 
 typedef enum _ENUM_RSSI_TRIGGER_TYPE {
 	ENUM_RSSI_TRIGGER_NONE,
@@ -465,6 +475,7 @@ struct _GLUE_INFO_T {
 
 	/* spinlock to protect Tx Queue Operation */
 	NDIS_SPIN_LOCK arSpinLock[SPIN_LOCK_NUM];
+
 
 	/* Number of pending frames, also used for debuging if any frame is
 	 * missing during the process of unloading Driver.
@@ -537,6 +548,7 @@ struct _GLUE_INFO_T {
 
 };
 
+
 #define MAX_MINIPORT_NAME_PATH                  256
 
 /*  miniport instance information */
@@ -547,6 +559,7 @@ typedef struct _MINIPORT_INSTANCE_INFO {
 	WCHAR ActiveKeyPath[MAX_MINIPORT_NAME_PATH];
 	ULONG InstanceNumber;
 } MINIPORT_INSTANCE_INFO, *PMINIPORT_INSTANCE_INFO;
+
 
 /* The packet structure placed in the NDIS_PACKET reserved field */
 typedef struct _PKT_INFO_RESERVED_T {
@@ -581,11 +594,11 @@ typedef struct _MEDIA_STREAMING_INDICATIONS_T {
 #define PKT_INFO_RESERVED_FLAG_802_3    BIT(0)
 #define PKT_INFO_RESERVED_FLAG_VLAN     BIT(1)
 
+
 /*******************************************************************************
 *                            P U B L I C   D A T A
 ********************************************************************************
 */
-ULONG RtlRandomEx(__inout PULONG Seed);
 
 /*******************************************************************************
 *                           P R I V A T E   D A T A
@@ -624,6 +637,7 @@ ULONG RtlRandomEx(__inout PULONG Seed);
 
 #define GLUE_SET_EVENT(_prGlueInfo)         NdisSetEvent(&((_prGlueInfo)->rTxReqEvent))
 
+
 /* Memory tag for this driver */
 #define NIC_MEM_TAG                             ((ULONG) 'MCPI')
 
@@ -635,22 +649,21 @@ ULONG RtlRandomEx(__inout PULONG Seed);
 
 /* To utilize reserved buffer of NDIS_PACKET */
 #define MP_GET_PKT_MR(_p)               (&(_p)->MiniportReservedEx[OFFSET_OF(PKT_INFO_RESERVED, pvPacket)])
-#define MP_GET_MR_PKT(_p) \
-	((PNDIS_PACKET) CONTAINING_RECORD(_p, NDIS_PACKET, MiniportReservedEx[OFFSET_OF(PKT_INFO_RESERVED, pvPacket)]))
+#define MP_GET_MR_PKT(_p)               (PNDIS_PACKET) CONTAINING_RECORD(_p, \
+					    NDIS_PACKET, MiniportReservedEx[OFFSET_OF(PKT_INFO_RESERVED, pvPacket)])
 #define MP_SET_PKT_TID(_p, _pri)        ((_p)->MiniportReservedEx[OFFSET_OF(PKT_INFO_RESERVED, ucTid)] = (_pri))
 #define MP_GET_PKT_TID(_p)              ((_p)->MiniportReservedEx[OFFSET_OF(PKT_INFO_RESERVED, ucTid)])
 
 #define MP_SET_PKT_TC(_p, _tc)          ((_p)->MiniportReservedEx[OFFSET_OF(PKT_INFO_RESERVED, ucTC)] = (_tc))
 #define MP_GET_PKT_TC(_p)               ((_p)->MiniportReservedEx[OFFSET_OF(PKT_INFO_RESERVED, ucTC)])
 
-#define MP_SET_PKT_PKTLEN(_p, _pktLen) \
-	(*((PUINT_16)&((_p)->MiniportReservedEx[OFFSET_OF(PKT_INFO_RESERVED, u2PktLen)])) = (_pktLen))
-#define MP_GET_PKT_PKTLEN(_p) \
-	(*((PUINT_16)&((_p)->MiniportReservedEx[OFFSET_OF(PKT_INFO_RESERVED, u2PktLen)])))
+#define MP_SET_PKT_PKTLEN(_p, _pktLen)  (*((PUINT_16)&((_p)->MiniportReservedEx[OFFSET_OF(PKT_INFO_RESERVED, u2PktLen)])) = (_pktLen))
+#define MP_GET_PKT_PKTLEN(_p)           (*((PUINT_16)&((_p)->MiniportReservedEx[OFFSET_OF(PKT_INFO_RESERVED, u2PktLen)])))
 
-#define MP_SET_PKT_DA_PTR(_p, _DA) \
-	((*((PUINT_16)&((_p)->MiniportReservedEx[OFFSET_OF(PKT_INFO_RESERVED, pucDA)])) = (_DA)))
+#define MP_SET_PKT_DA_PTR(_p, _DA)      (*((PUINT_16)&((_p)->MiniportReservedEx[OFFSET_OF(PKT_INFO_RESERVED, pucDA)])) = (_DA))
 #define MP_GET_PKT_DA_PTR(_p)           (*((PUINT_16)&((_p)->MiniportReservedEx[OFFSET_OF(PKT_INFO_RESERVED, pucDA)])))
+
+
 
 /* Macros for flag operations for the Adapter structure */
 #define GLUE_SET_FLAG(_M, _F)           ((_M)->u4Flags |= (_F))
@@ -705,60 +718,64 @@ ULONG RtlRandomEx(__inout PULONG Seed);
 	    (*((PUINT_8) &(((PNDIS_PACKET)(_p))->MiniportReservedEx[4])) |= \
 	     PKT_INFO_RESERVED_FLAG_P2P)
 
+
 #define GLUE_GET_PKT_TID(_p)        \
-	    ((*((PUINT_8) &(((PNDIS_PACKET)(_p))->MiniportReservedEx[4]))) & \
+	    ((*((PUINT_8) &(((PNDIS_PACKET)(_p))->MiniportReservedEx[4])) ) & \
 	     PKT_INFO_RESERVED_TID_MASK)
 
 #define GLUE_GET_PKT_IS_802_11(_p)      \
-	    ((*((PUINT_8) &(((PNDIS_PACKET)(_p))->MiniportReservedEx[4]))) & \
+	    ((*((PUINT_8) &(((PNDIS_PACKET)(_p))->MiniportReservedEx[4])) ) & \
 	     PKT_INFO_RESERVED_FLAG_802_11)
 
 #define GLUE_GET_PKT_IS_1X(_p)          \
-	    ((*((PUINT_8) &(((PNDIS_PACKET)(_p))->MiniportReservedEx[4]))) & \
+	    ((*((PUINT_8) &(((PNDIS_PACKET)(_p))->MiniportReservedEx[4])) ) & \
 	     PKT_INFO_RESERVED_FLAG_1X)
 
 #define GLUE_GET_PKT_IS_PAL(_p)         \
-	    ((*((PUINT_8) &(((PNDIS_PACKET)(_p))->MiniportReservedEx[4]))) & \
+	    ((*((PUINT_8) &(((PNDIS_PACKET)(_p))->MiniportReservedEx[4])) ) & \
 	     PKT_INFO_RESERVED_FLAG_PAL)
 
 #define GLUE_GET_PKT_IS_P2P(_p)         \
-	    ((*((PUINT_8) &(((PNDIS_PACKET)(_p))->MiniportReservedEx[4]))) & \
+	    ((*((PUINT_8) &(((PNDIS_PACKET)(_p))->MiniportReservedEx[4])) ) & \
 	     PKT_INFO_RESERVED_FLAG_P2P)
+
 
 #define GLUE_SET_PKT_HEADER_LEN(_p, _ucMacHeaderLen)    \
 	    (*((PUINT_8) &(((PNDIS_PACKET)(_p))->MiniportReservedEx[5])) = \
 	     (_ucMacHeaderLen))
 
 #define GLUE_GET_PKT_HEADER_LEN(_p) \
-	    (*((PUINT_8) &(((PNDIS_PACKET)(_p))->MiniportReservedEx[5])))
+	    (*((PUINT_8) &(((PNDIS_PACKET)(_p))->MiniportReservedEx[5])) )
+
 
 #define GLUE_SET_PKT_FRAME_LEN(_p, _u2FrameLen) \
-	    (*((PUINT_16) & (((PNDIS_PACKET)(_p))->MiniportReservedEx[6])) = \
+            (*((PUINT_16) & (((PNDIS_PACKET)(_p))->MiniportReservedEx[6])) = \
 	     (_u2FrameLen))
 
 #define GLUE_GET_PKT_FRAME_LEN(_p)    \
-	    (*((PUINT_16) & (((PNDIS_PACKET)(_p))->MiniportReservedEx[6])))
+            (*((PUINT_16) & (((PNDIS_PACKET)(_p))->MiniportReservedEx[6])) )
+
 
 #define GLUE_SET_PKT_ARRIVAL_TIME(_p, _rSysTime) \
-	    (*((POS_SYSTIME) & (((PNDIS_PACKET)(_p))->MiniportReservedEx[8])) = \
+            (*((POS_SYSTIME) & (((PNDIS_PACKET)(_p))->MiniportReservedEx[8])) = \
 	     (OS_SYSTIME)(_rSysTime))
 
 #define GLUE_GET_PKT_ARRIVAL_TIME(_p)    \
-	    (*((POS_SYSTIME) & (((PNDIS_PACKET)(_p))->MiniportReservedEx[8])))
+            (*((POS_SYSTIME) & (((PNDIS_PACKET)(_p))->MiniportReservedEx[8])) )
 
 #define GLUE_SET_PKT_BSS_IDX(_p, _ucBssIndex) \
 	    (*((PUINT_8) &(((PNDIS_PACKET)(_p))->MiniportReservedEx[12])) = \
 	     (UINT_8)(_ucBssIndex))
 
 #define GLUE_GET_PKT_BSS_IDX(_p)    \
-	    (*((PUINT_8) &(((PNDIS_PACKET)(_p))->MiniportReservedEx[12])))
+	    (*((PUINT_8) &(((PNDIS_PACKET)(_p))->MiniportReservedEx[12])) )
 
 #define GLUE_SET_PKT_FLAG_802_3(_p) \
 	    (*((PUINT_8) &(((PNDIS_PACKET)(_p))->MiniportReservedEx[13])) |= \
 	     PKT_INFO_RESERVED_FLAG_802_3)
 
 #define GLUE_GET_PKT_IS_802_3(_p) \
-	    ((*((PUINT_8) &(((PNDIS_PACKET)(_p))->MiniportReservedEx[13]))) & \
+	    ((*((PUINT_8) &(((PNDIS_PACKET)(_p))->MiniportReservedEx[13])) ) & \
 	     PKT_INFO_RESERVED_FLAG_802_3)
 
 #define GLUE_SET_PKT_FLAG_VLAN_EXIST(_p)  \
@@ -766,14 +783,16 @@ ULONG RtlRandomEx(__inout PULONG Seed);
 	     PKT_INFO_RESERVED_FLAG_VLAN)
 
 #define GLUE_GET_PKT_IS_VLAN_EXIST(_p)  \
-	    ((*((PUINT_8) &(((PNDIS_PACKET)(_p))->MiniportReservedEx[13]))) & \
+	    ((*((PUINT_8) &(((PNDIS_PACKET)(_p))->MiniportReservedEx[13])) ) & \
 	     PKT_INFO_RESERVED_FLAG_VLAN)
+
 
 /*******************************************************************************
 *                  F U N C T I O N   D E C L A R A T I O N S
 ********************************************************************************
 */
-NDIS_STATUS windowsFindAdapter(IN P_GLUE_INFO_T prGlueInfo, IN NDIS_HANDLE rWrapperConfigurationContext);
+NDIS_STATUS
+windowsFindAdapter(IN P_GLUE_INFO_T prGlueInfo, IN NDIS_HANDLE rWrapperConfigurationContext);
 
 NDIS_STATUS windowsRegisterIsrt(IN P_GLUE_INFO_T prGlueInfo);
 
@@ -808,6 +827,7 @@ VOID NdisSetEvent(IN PVOID Event);
 BOOLEAN NdisWaitEvent(IN PVOID Event, IN UINT_32 MsToWait);
 
 VOID NdisResetEvent(IN PVOID Event);
-#endif /* _lint */
+#endif				/* _lint */
 
-#endif /* _GL_OS_H */
+
+#endif				/* _GL_OS_H */

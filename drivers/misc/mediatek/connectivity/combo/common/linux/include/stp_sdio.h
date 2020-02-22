@@ -157,7 +157,7 @@ typedef struct _MTK_WCN_STP_SDIO_PKT_BUF {
 #endif
 	MTK_WCN_BOOL full_flag;	/* Tx entry ring buffer full flag (TRUE: full, FALSE: not full) */
 	/* save interrupt status flag for Tx entry ring buf spin lock */
-	unsigned long rd_irq_flag;
+	UINT32 rd_irq_flag;
 	/* wait queue head for Tx entry ring buf full case */
 	wait_queue_head_t fullwait_q;
 } MTK_WCN_STP_SDIO_PKT_BUF;

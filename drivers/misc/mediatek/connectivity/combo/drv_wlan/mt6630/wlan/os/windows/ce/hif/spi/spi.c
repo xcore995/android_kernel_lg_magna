@@ -1,5 +1,5 @@
 /*
-** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/windows/ce/hif/spi/spi.c#1
+** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/windows/ce/hif/spi/spi.c#1 $
 */
 
 /*! \file   spi.c
@@ -7,8 +7,10 @@
 	    function for Windows.
 */
 
+
+
 /*
-** Log: spi.c
+** $Log: spi.c $
 **
 ** 09 17 2012 cm.chang
 ** [BORA00002149] [MT6630 Wi-Fi] Initial software development
@@ -42,7 +44,7 @@
 
 LINT_EXT_HEADER_BEGIN 
 #include <ceddk.h>
-LINT_EXT_HEADER_END
+    LINT_EXT_HEADER_END
 #include "hif.h"
 /*******************************************************************************
 *                          C O N S T A N T S
@@ -68,6 +70,36 @@ LINT_EXT_HEADER_END
 *              F U N C T I O N   D E C L A R A T I O N S
 ********************************************************************************
 */
+#ifdef _lint
+BOOLEAN InterruptInitialize(UINT_32, PVOID, UINT_32, UINT_32);
+
+
+NDIS_STATUS NdisMRegisterInterrupt(PVOID, UINT_32, UINT_32, UINT_32, BOOLEAN,	/* RequestIsr */
+				   BOOLEAN,	/* SharedInterrupt */
+				   UINT_32);
+
+BOOLEAN
+KernelIoControl(UINT_32 dwIoControlCode,
+		PUCHAR lpInBuf,
+		UINT_32 nInBufSize, PVOID lpOutBuf, UINT_32 nOutBufSize, PUINT_32 lpBytesReturned);
+
+BOOL CloseHandle(UINT_32 hObject);
+
+BOOL DisableThreadLibraryCalls(UINT_32 hModule);
+
+VOID CTL_CODE(UINT_32 DeviceType, UINT_32 Access, UINT_32 Function, UINT_32 Method);
+
+VOID NdisMDeregisterInterrupt(IN PUINT_32 Interrupt);
+
+VOID
+NdisWriteErrorLogEntry(IN UINT_32 NdisAdapterHandle,
+		       IN UINT_32 ErrorCode, IN ULONG NumberOfErrorValues);
+
+UINT_32
+CreateEvent(PUINT_32 lpEventAttributes, BOOL bManualReset, BOOL bInitialState, PVOID lpName);
+
+#endif				/* end of _lint */
+
 
 /*******************************************************************************
 *                          F U N C T I O N S
@@ -86,7 +118,8 @@ LINT_EXT_HEADER_BEGIN 
 *
 */
 /*----------------------------------------------------------------------------*/
-NDIS_STATUS windowsFindAdapter(IN P_GLUE_INFO_T prGlueInfo, IN NDIS_HANDLE rWrapperConfigurationContext)
+NDIS_STATUS
+windowsFindAdapter(IN P_GLUE_INFO_T prGlueInfo, IN NDIS_HANDLE rWrapperConfigurationContext)
 {
 
 	ASSERT(prGlueInfo);
@@ -95,6 +128,7 @@ NDIS_STATUS windowsFindAdapter(IN P_GLUE_INFO_T prGlueInfo, IN NDIS_HANDLE rWrap
 
 	return NDIS_STATUS_SUCCESS;
 }				/* windowsFindAdapter */
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -122,9 +156,7 @@ NDIS_STATUS windowsRegisterIsrt(IN P_GLUE_INFO_T prGlueInfo)
 	INITLOG(("Register IRQ: handle=0x%x, irq=0x%x, level-triggered\n",
 		 prGlueInfo->rMiniportAdapterHandle, prHifInfo->u4InterruptLevel));
 
-	rStatus = NdisMRegisterInterrupt(&prHifInfo->rInterrupt, prGlueInfo->rMiniportAdapterHandle,
-					(UINT) prHifInfo->u4InterruptVector,
-					(UINT) prHifInfo->u4InterruptLevel, TRUE,	/* RequestIsr */
+	rStatus = NdisMRegisterInterrupt(&prHifInfo->rInterrupt, prGlueInfo->rMiniportAdapterHandle, (UINT) prHifInfo->u4InterruptVector, (UINT) prHifInfo->u4InterruptLevel, TRUE,	/* RequestIsr */
 					 FALSE,	/* SharedInterrupt */
 					 NIC_INTERRUPT_MODE);
 
@@ -133,7 +165,8 @@ NDIS_STATUS windowsRegisterIsrt(IN P_GLUE_INFO_T prGlueInfo)
 			  rStatus, prHifInfo->u4InterruptLevel));
 
 		NdisWriteErrorLogEntry(prGlueInfo->rMiniportAdapterHandle,
-				       NDIS_ERROR_CODE_INTERRUPT_CONNECT, 1, (UINT_32) prHifInfo->u4InterruptLevel);
+				       NDIS_ERROR_CODE_INTERRUPT_CONNECT, 1,
+				       (UINT_32) prHifInfo->u4InterruptLevel);
 	}
 
 	GLUE_SET_FLAG(prGlueInfo, GLUE_FLAG_INTERRUPT_IN_USE);
@@ -155,13 +188,15 @@ NDIS_STATUS windowsRegisterIsrt(IN P_GLUE_INFO_T prGlueInfo)
 			prHifInfo->u4sysIntr = g_SysIntr;
 		}
 
-		if (!(InterruptInitialize(g_SysIntr, prHifInfo->gWaitEvent, 0, 0)))
+		if (!(InterruptInitialize(g_SysIntr, prHifInfo->gWaitEvent, 0, 0))) {
 			INITLOG(("ERROR: Interrupt initialize failed.\n"));
+		}
 	}
 #endif
 
 	return rStatus;
 }				/* windowsRegisterIsrt */
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -191,6 +226,7 @@ NDIS_STATUS windowsUnregisterIsrt(IN P_GLUE_INFO_T prGlueInfo)
 	return NDIS_STATUS_SUCCESS;
 }				/* windowsUnregisterIsrt */
 
+
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief This routine is to allocate memory mapping for the HW register.
@@ -207,6 +243,7 @@ NDIS_STATUS windowsMapAllocateRegister(IN P_GLUE_INFO_T prGlueInfo)
 {
 	return NDIS_STATUS_SUCCESS;
 }				/* windowsMapAllocateRegister */
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -225,6 +262,7 @@ NDIS_STATUS windowsUMapFreeRegister(IN P_GLUE_INFO_T prGlueInfo)
 
 	return NDIS_STATUS_SUCCESS;
 }				/* windowsUnapFreeRegister */
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -282,6 +320,7 @@ BOOL kalDevRegRead(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4Register, OUT PUINT
 	return TRUE;
 }				/* kalDevRegRead */
 
+
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief This routine is used to write a 32 bit register value to device.
@@ -298,12 +337,13 @@ BOOL kalDevRegWrite(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4Register, IN UINT_
 {
 	GLUE_ACQUIRE_SPIN_LOCK(prGlueInfo, SPIN_LOCK_SPI_ACCESS);
 
-	SpiSendCmd32(SPI_FUN_WR, u4Register, (PUINT_32) & u4Value);
+	SpiSendCmd32(SPI_FUN_WR, u4Register, (PUINT_32) &u4Value);
 
 	GLUE_RELEASE_SPIN_LOCK(prGlueInfo, SPIN_LOCK_SPI_ACCESS);
 
 	return TRUE;
 }				/* kalDevRegWrite */
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -321,13 +361,15 @@ BOOL kalDevRegWrite(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4Register, IN UINT_
 /*----------------------------------------------------------------------------*/
 BOOL
 kalDevPortRead(IN P_GLUE_INFO_T prGlueInfo,
-	       IN UINT_32 u4Port, IN UINT_32 u4Len, OUT PUINT_8 pucBuf, IN UINT_32 u4ValidOutBufSize)
+	       IN UINT_32 u4Port,
+	       IN UINT_32 u4Len, OUT PUINT_8 pucBuf, IN UINT_32 u4ValidOutBufSize)
 {
 	ASSERT(u4Len);
 
 #if DBG
 	if (IS_NOT_ALIGN_4((UINT_32) pucBuf) || (u4Len & 0x03)) {
-		DBGLOG1(HAL, ERROR, "kalDevPortRead error, address: 0x%p, len:%d!\n", pucBuf, u4Len);
+		DBGLOG(HAL, ERROR,
+		       ("kalDevPortRead error, address: 0x%p, len:%d!\n", pucBuf, u4Len));
 		return FALSE;
 	}
 #endif
@@ -340,6 +382,7 @@ kalDevPortRead(IN P_GLUE_INFO_T prGlueInfo,
 
 	return TRUE;
 }				/* kalDevPortRead */
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -363,7 +406,8 @@ kalDevPortWrite(IN P_GLUE_INFO_T prGlueInfo,
 
 #if DBG
 	if (((unsigned long)pucBuf & 0x03) || (u4Len & 0x03)) {
-		DBGLOG1(HAL, ERROR, "kalDevPortWrite error, address: 0x%p, len:%d!\n", pucBuf, u4Len);
+		DBGLOG(HAL, ERROR,
+		       ("kalDevPortWrite error, address: 0x%p, len:%d!\n", pucBuf, u4Len));
 		return FALSE;
 	}
 #endif

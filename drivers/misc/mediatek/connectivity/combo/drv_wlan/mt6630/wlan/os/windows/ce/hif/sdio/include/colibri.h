@@ -1,5 +1,5 @@
 /*
-** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/windows/ce/hif/sdio/include/colibri.h#1
+** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/windows/ce/hif/sdio/include/colibri.h#1 $
 */
 
 /*! \file   "cloibri.h"
@@ -7,8 +7,10 @@
 
 */
 
+
+
 /*
-** Log: colibri.h
+** $Log: colibri.h $
 **
 ** 09 17 2012 cm.chang
 ** [BORA00002149] [MT6630 Wi-Fi] Initial software development
@@ -75,4 +77,4 @@
 ********************************************************************************
 */
 
-#endif /* _COLIBRI_H */
+#endif				/* _COLIBRI_H */

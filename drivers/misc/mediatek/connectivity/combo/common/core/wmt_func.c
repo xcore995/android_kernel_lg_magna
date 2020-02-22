@@ -124,25 +124,25 @@ CMB_PIN_CTRL_REG eediPinOhRegs[] = {
 	{
 	 /* pull down ctrl register */
 	 .regAddr = 0x80050020,
-	 .regValue = ~(0x1U << 5),
+	 .regValue = ~(0x1UL << 5),
 	 .regMask = 0x00000020UL,
 	 },
 	{
 	 /* pull up ctrl register */
 	 .regAddr = 0x80050000,
-	 .regValue = 0x1U << 5,
+	 .regValue = 0x1UL << 5,
 	 .regMask = 0x00000020UL,
 	 },
 	{
 	 /* iomode ctrl register */
 	 .regAddr = 0x80050110,
-	 .regValue = 0x1U << 0,
+	 .regValue = 0x1UL << 0,
 	 .regMask = 0x00000007UL,
 	 },
 	{
 	 /* output high/low ctrl register */
 	 .regAddr = 0x80050040,
-	 .regValue = 0x1U << 5,
+	 .regValue = 0x1UL << 5,
 	 .regMask = 0x00000020UL,
 	 }
 
@@ -151,22 +151,22 @@ CMB_PIN_CTRL_REG eediPinOhRegs[] = {
 CMB_PIN_CTRL_REG eediPinOlRegs[] = {
 	{
 	 .regAddr = 0x80050020,
-	 .regValue = 0x1U << 5,
+	 .regValue = 0x1UL << 5,
 	 .regMask = 0x00000020UL,
 	 },
 	{
 	 .regAddr = 0x80050000,
-	 .regValue = ~(0x1U << 5),
+	 .regValue = ~(0x1UL << 5),
 	 .regMask = 0x00000020UL,
 	 },
 	{
 	 .regAddr = 0x80050110,
-	 .regValue = 0x1U << 0,
+	 .regValue = 0x1UL << 0,
 	 .regMask = 0x00000007UL,
 	 },
 	{
 	 .regAddr = 0x80050040,
-	 .regValue = ~(0x1U << 5),
+	 .regValue = ~(0x1UL << 5),
 	 .regMask = 0x00000020UL,
 	 }
 };
@@ -174,22 +174,22 @@ CMB_PIN_CTRL_REG eediPinOlRegs[] = {
 CMB_PIN_CTRL_REG eedoPinOhRegs[] = {
 	{
 	 .regAddr = 0x80050020,
-	 .regValue = ~(0x1U << 7),
+	 .regValue = ~(0x1UL << 7),
 	 .regMask = 0x00000080UL,
 	 },
 	{
 	 .regAddr = 0x80050000,
-	 .regValue = 0x1U << 7,
+	 .regValue = 0x1UL << 7,
 	 .regMask = 0x00000080UL,
 	 },
 	{
 	 .regAddr = 0x80050110,
-	 .regValue = 0x1U << 12,
+	 .regValue = 0x1UL << 12,
 	 .regMask = 0x00007000UL,
 	 },
 	{
 	 .regAddr = 0x80050040,
-	 .regValue = 0x1U << 7,
+	 .regValue = 0x1UL << 7,
 	 .regMask = 0x00000080UL,
 	 }
 };
@@ -198,22 +198,22 @@ CMB_PIN_CTRL_REG eedoPinOhRegs[] = {
 CMB_PIN_CTRL_REG eedoPinOlRegs[] = {
 	{
 	 .regAddr = 0x80050020,
-	 .regValue = 0x1U << 7,
+	 .regValue = 0x1UL << 7,
 	 .regMask = 0x00000080UL,
 	 },
 	{
 	 .regAddr = 0x80050000,
-	 .regValue = ~(0x1U << 7),
+	 .regValue = ~(0x1UL << 7),
 	 .regMask = 0x00000080UL,
 	 },
 	{
 	 .regAddr = 0x80050110,
-	 .regValue = 0x1U << 12,
+	 .regValue = 0x1UL << 12,
 	 .regMask = 0x00007000UL,
 	 },
 	{
 	 .regAddr = 0x80050040,
-	 .regValue = ~(0x1U << 7),
+	 .regValue = ~(0x1UL << 7),
 	 .regMask = 0x00000080UL,
 	 }
 
@@ -222,8 +222,8 @@ CMB_PIN_CTRL_REG eedoPinOlRegs[] = {
 CMB_PIN_CTRL_REG gsyncPinOnRegs[] = {
 	{
 	 .regAddr = 0x80050110,
-	 .regValue = 0x3U << 20,
-	 .regMask = 0x7U << 20,
+	 .regValue = 0x3UL << 20,
+	 .regMask = 0x7UL << 20,
 	 }
 
 };
@@ -231,8 +231,8 @@ CMB_PIN_CTRL_REG gsyncPinOnRegs[] = {
 CMB_PIN_CTRL_REG gsyncPinOffRegs[] = {
 	{
 	 .regAddr = 0x80050110,
-	 .regValue = 0x0U << 20,
-	 .regMask = 0x7U << 20,
+	 .regValue = 0x0UL << 20,
+	 .regMask = 0x7UL << 20,
 	 }
 };
 
@@ -501,8 +501,8 @@ INT32 wmt_func_fm_off(P_WMT_IC_OPS pOps, P_WMT_GEN_CONF pConf)
 INT32 wmt_func_wifi_ctrl(ENUM_FUNC_STATE funcState)
 {
 	INT32 iRet = 0;
-	unsigned long ctrlPa1 = WMT_SDIO_FUNC_WIFI;
-	unsigned long ctrlPa2 = (FUNC_ON == funcState) ? 1 : 0;	/* turn on Wi-Fi driver */
+	UINT32 ctrlPa1 = WMT_SDIO_FUNC_WIFI;
+	UINT32 ctrlPa2 = (FUNC_ON == funcState) ? 1 : 0;	/* turn on Wi-Fi driver */
 	iRet = wmt_core_ctrl(WMT_CTRL_SDIO_FUNC, &ctrlPa1, &ctrlPa2);
 	if (iRet) {
 		WMT_ERR_FUNC("WMT-FUNC: turn on WIFI function fail (%d)", iRet);

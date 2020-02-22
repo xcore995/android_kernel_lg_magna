@@ -8,6 +8,10 @@
     The file contains the function declarations and defines for used in BSS/IBSS.
 */
 
+
+
+
+
 #ifndef _P2P_BSS_H
 #define _P2P_BSS_H
 
@@ -50,6 +54,7 @@
 *                  F U N C T I O N   D E C L A R A T I O N S
 ********************************************************************************
 */
+
 
 UINT_32 p2pGetTxProbRspIeTableSize(VOID);
 

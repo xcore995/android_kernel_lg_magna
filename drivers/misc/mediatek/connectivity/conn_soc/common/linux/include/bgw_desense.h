@@ -23,9 +23,8 @@
 #undef ERR
 #endif
 
-#define PFX                         "[BWG] "		
-#define MSG(fmt, arg ...) pr_debug(PFX "[D]%s: "  fmt, __func__ , ##arg)
-#define ERR(fmt, arg ...) pr_err(PFX "[E]%s: "  fmt, __func__ , ##arg)
+#define MSG(fmt, arg ...) printk(KERN_INFO "[BGW] %s: " fmt, __FUNCTION__ ,##arg)
+#define ERR(fmt, arg ...) printk(KERN_ERR "[BGW] %s: " fmt, __FUNCTION__ ,##arg)
 
 #ifdef NETLINK_TEST
 #undef NETLINK_TEST

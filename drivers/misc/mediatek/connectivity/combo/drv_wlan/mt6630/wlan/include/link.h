@@ -9,6 +9,7 @@
     operation MACROs and INLINE functions.
 */
 
+
 #ifndef _LINK_H
 #define _LINK_H
 
@@ -23,6 +24,7 @@
 */
 #include "gl_typedef.h"
 
+
 /*******************************************************************************
 *                              C O N S T A N T S
 ********************************************************************************
@@ -32,6 +34,7 @@
 
 /* Used to verify that nonbody uses non-initialized link entries. */
 #define INVALID_LINK_POISON2    ((VOID *) 0x00100201)
+
 
 /*******************************************************************************
 *                             D A T A   T Y P E S
@@ -98,6 +101,7 @@ typedef struct _LINK_T {
 
 #define LINK_IS_VALID(prLink)           (((P_LINK_T)(prLink))->prNext != (P_LINK_ENTRY_T)NULL)
 
+
 #define LINK_ENTRY(ptr, type, member)   ENTRY_OF(ptr, type, member)
 
 /* Insert an entry into a link list's head */
@@ -106,6 +110,7 @@ typedef struct _LINK_T {
 	    linkAdd(prEntry, prLink); \
 	    ((prLink)->u4NumElem)++; \
 	}
+
 
 /* Append an entry into a link list's tail */
 #define LINK_INSERT_TAIL(prLink, prEntry) \
@@ -215,7 +220,8 @@ typedef struct _LINK_T {
 * \return (none)
 */
 /*----------------------------------------------------------------------------*/
-static __KAL_INLINE__ VOID __linkAdd(IN P_LINK_ENTRY_T prNew, IN P_LINK_ENTRY_T prPrev, IN P_LINK_ENTRY_T prNext)
+static __KAL_INLINE__ VOID
+__linkAdd(IN P_LINK_ENTRY_T prNew, IN P_LINK_ENTRY_T prPrev, IN P_LINK_ENTRY_T prNext)
 {
 	prNext->prPrev = prNew;
 	prNew->prNext = prNext;
@@ -224,6 +230,7 @@ static __KAL_INLINE__ VOID __linkAdd(IN P_LINK_ENTRY_T prNew, IN P_LINK_ENTRY_T 
 
 	return;
 }				/* end of __linkAdd() */
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -242,6 +249,7 @@ static __KAL_INLINE__ VOID linkAdd(IN P_LINK_ENTRY_T prNew, IN P_LINK_T prLink)
 	return;
 }				/* end of linkAdd() */
 
+
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief This function will add a new entry before the specified link head.
@@ -258,6 +266,7 @@ static __KAL_INLINE__ VOID linkAddTail(IN P_LINK_ENTRY_T prNew, IN P_LINK_T prLi
 
 	return;
 }				/* end of linkAddTail() */
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -276,6 +285,7 @@ static __KAL_INLINE__ VOID __linkDel(IN P_LINK_ENTRY_T prPrev, IN P_LINK_ENTRY_T
 
 	return;
 }				/* end of __linkDel() */
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -296,6 +306,7 @@ static __KAL_INLINE__ VOID linkDel(IN P_LINK_ENTRY_T prEntry)
 	return;
 }				/* end of linkDel() */
 
+
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief This function will delete a specified entry from link list and then add it
@@ -314,6 +325,7 @@ static __KAL_INLINE__ VOID linkMove(IN P_LINK_ENTRY_T prEntry, IN P_LINK_T prLin
 
 	return;
 }				/* end of linkMove() */
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -334,4 +346,4 @@ static __KAL_INLINE__ VOID linkMoveTail(IN P_LINK_ENTRY_T prEntry, IN P_LINK_T p
 	return;
 }				/* end of linkMoveTail() */
 
-#endif /* _LINK_H */
+#endif				/* _LINK_H */

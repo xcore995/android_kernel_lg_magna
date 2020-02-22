@@ -71,7 +71,7 @@ CONSYS_EMI_ADDR_INFO mtk_wcn_emi_addr_info = {
 	.paged_trace_off = CONSYS_EMI_PAGED_TRACE_OFFSET,
 	.paged_dump_off = CONSYS_EMI_PAGED_DUMP_OFFSET,
 	.full_dump_off = CONSYS_EMI_FULL_DUMP_OFFSET,
-	.p_ecso = &mtk_wcn_emi_state_off,
+	.p_emi_ctrl_state_offset = &mtk_wcn_emi_state_off,
 };
 
 #if CFG_WMT_LTE_COEX_HANDLING
@@ -885,10 +885,6 @@ VOID wmt_plat_BGF_irq_dump_status(VOID)
 {
 	mt_irq_dump_status(MT_CONN2AP_BTIF_WAKEUP_IRQ_ID);
 }
-MTK_WCN_BOOL wmt_plat_dump_BGF_irq_status(VOID)
-{
-    return MTK_WCN_BOOL_FALSE;
-}
 #endif
 
 UINT32 wmt_plat_read_cpupcr()
@@ -1054,7 +1050,6 @@ EXPORT_SYMBOL(wmt_plat_jtag_flag_ctrl);
 #endif
 #if CFG_WMT_DUMP_INT_STATUS
 EXPORT_SYMBOL(wmt_plat_BGF_irq_dump_status);
-EXPORT_SYMBOL(wmt_plat_dump_BGF_irq_status);
 #endif
 #if CONSYS_WMT_REG_SUSPEND_CB_ENABLE
 EXPORT_SYMBOL(wmt_plat_soc_osc_en_ctrl);

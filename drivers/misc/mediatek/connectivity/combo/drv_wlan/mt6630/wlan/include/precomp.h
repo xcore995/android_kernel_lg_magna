@@ -9,6 +9,9 @@
     enable/disable such switch or adjust numeric parameters.
 */
 
+
+
+
 #ifndef _PRECOMP_H
 #define _PRECOMP_H
 
@@ -37,6 +40,7 @@
 
 #include "link.h"
 #include "queue.h"
+
 
 /*------------------------------------------------------------------------------
  * .\include\mgmt
@@ -88,6 +92,7 @@
 #include "p2p_nic.h"
 #endif
 
+
 /*------------------------------------------------------------------------------
  * .\include\mgmt
  *------------------------------------------------------------------------------
@@ -133,14 +138,12 @@
 
 #include "pwr_mgt.h"
 
-#if (CFG_SUPPORT_STATISTICS == 1)
-#include "stats.h"
-#endif /* CFG_SUPPORT_STATISTICS */
 
 #include "cnm.h"
 /* Dependency:  aa_fsm.h (ENUM_AA_STATE_T), p2p_fsm.h (WPS_ATTRI_MAX_LEN_DEVICE_NAME) */
 #include "cnm_mem.h"
 #include "cnm_scan.h"
+
 
 #if CFG_ENABLE_WIFI_DIRECT
 #include "p2p_rlm_obss.h"
@@ -166,11 +169,13 @@
 
 #if CFG_SUPPORT_ROAMING
 #include "roaming_fsm.h"
-#endif /* CFG_SUPPORT_ROAMING */
+#endif				/* CFG_SUPPORT_ROAMING */
 
 #include "ais_fsm.h"
 
+
 #include "adapter.h"
+
 
 #include "que_mgt.h"
 #include "rftest.h"
@@ -196,7 +201,6 @@
 #include "tdls.h"
 #endif
 
-extern BOOLEAN fgIsResetting;
 
 /*******************************************************************************
 *                              C O N S T A N T S
@@ -233,4 +237,4 @@ extern BOOLEAN fgIsResetting;
 ********************************************************************************
 */
 
-#endif /* _PRECOMP_H */
+#endif				/* _PRECOMP_H */

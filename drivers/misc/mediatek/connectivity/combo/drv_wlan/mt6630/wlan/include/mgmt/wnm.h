@@ -1,5 +1,5 @@
 /*
-** Id: //Department/DaVinci/TRUNK/MT6620_5931_WiFi_Driver/include/mgmt/wnm.h#1
+** $Id: //Department/DaVinci/TRUNK/MT6620_5931_WiFi_Driver/include/mgmt/wnm.h#1 $
 */
 
 /*! \file  wnm.h
@@ -7,8 +7,10 @@
 	   for MediaTek 802.11 Wireless LAN Adapters.
 */
 
+
+
 /*
-** Log: wnm.h
+** $Log: wnm.h $
 **
 ** 09 17 2012 cm.chang
 ** [BORA00002149] [MT6630 Wi-Fi] Initial software development
@@ -76,7 +78,9 @@ typedef struct _TIMINGMSMT_PARAM_T {
 
 VOID wnmWNMAction(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfb);
 
-VOID wnmReportTimingMeas(IN P_ADAPTER_T prAdapter, IN UINT_8 ucStaRecIndex, IN UINT_32 u4ToD, IN UINT_32 u4ToA);
+VOID
+wnmReportTimingMeas(IN P_ADAPTER_T prAdapter,
+		    IN UINT_8 ucStaRecIndex, IN UINT_32 u4ToD, IN UINT_32 u4ToA);
 
 #define WNM_UNIT_TEST 1
 
@@ -89,4 +93,4 @@ VOID wnmTimingMeasUnitTest1(P_ADAPTER_T prAdapter, UINT_8 ucStaRecIndex);
 ********************************************************************************
 */
 
-#endif /* _WNM_H */
+#endif				/* _WNM_H */

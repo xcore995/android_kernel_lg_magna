@@ -9,6 +9,8 @@
     queue operation MACROs.
 */
 
+
+
 #ifndef _QUEUE_H
 #define _QUEUE_H
 
@@ -44,6 +46,7 @@ typedef struct _QUE_T {
 	P_QUE_ENTRY_T prTail;
 	UINT_32 u4NumElem;
 } QUE_T, *P_QUE_T;
+
 
 /*******************************************************************************
 *                            P U B L I C   D A T A
@@ -108,7 +111,7 @@ typedef struct _QUE_T {
  * so that we can cast the queue entry to other data type without doubts.
  * And this macro also decrease the total entry count at the same time.
  */
-#define QUEUE_REMOVE_HEAD(prQueue, prQueueEntry, _P_TYPE) \
+ #define QUEUE_REMOVE_HEAD(prQueue, prQueueEntry, _P_TYPE) \
 	{ \
 		ASSERT(prQueue); \
 		prQueueEntry = (_P_TYPE)((prQueue)->prHead); \
@@ -177,4 +180,4 @@ extern UINT_8 g_arTdlsLink[MAXNUM_TDLS_PEER];
 ********************************************************************************
 */
 
-#endif /* _QUEUE_H */
+#endif				/* _QUEUE_H */

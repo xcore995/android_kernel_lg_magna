@@ -99,16 +99,16 @@ static INT32 mtk_wcn_consys_jtag_set_for_mcu(VOID)
 
     jtag_addr1 = ioremap(JTAG_ADDR1_BASE, 0x5000);
     if (jtag_addr1 == 0) {
-		pr_warn("remap jtag_addr1 fail!\n");
+        printk("remap jtag_addr1 fail!\n");
         return -1;
     }
-	pr_warn("jtag_addr1 = 0x%p\n", jtag_addr1);
+    printk("jtag_addr1 = 0x%p\n", jtag_addr1);
     jtag_addr2 = ioremap(JTAG_ADDR2_BASE, 0x1000);
     if (jtag_addr2 == 0) {
-		pr_warn("remap jtag_addr2 fail!\n");
+        printk("remap jtag_addr2 fail!\n");
         return -1;
     }
-	pr_warn("jtag_addr2 = 0x%p\n", jtag_addr2);
+    printk("jtag_addr2 = 0x%p\n", jtag_addr2);
 
                 /*Enable IES of all pins*/
     JTAG1_REG_WRITE(0x10208004, 0xffffffff);

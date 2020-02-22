@@ -69,7 +69,7 @@
 #ifndef MTK_WCN_WMT_STP_EXP_SYMBOL_ABSTRACT
 
 typedef VOID (*MTK_WCN_STP_EVENT_CB) (VOID);
-typedef INT32 (*MTK_WCN_STP_IF_TX) (const PUINT8 data, const UINT32 size, PUINT32 written_size);
+typedef INT32(*MTK_WCN_STP_IF_TX) (const PUINT8 data, const UINT32 size, PUINT32 written_size);
 /* export for HIF driver */
 typedef VOID (*MTK_WCN_STP_IF_RX) (const PUINT8 data, INT32 size);
 

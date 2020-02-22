@@ -267,9 +267,6 @@ extern INT32 mtk_wcn_consys_hw_wifi_paldo_ctrl(UINT32 enable);
 extern INT32 mtk_wcn_consys_hw_vcn28_ctrl(UINT32 enable);
 extern INT32 mtk_wcn_consys_hw_state_show(VOID);
 extern UINT8 *mtk_wcn_consys_emi_virt_addr_get(UINT32 ctrl_state_offset);
-#ifdef CONFIG_MTK_LM_MODE
-extern unsigned int enable_4G(void);
-#endif
 #if CONSYS_ENALBE_SET_JTAG
 extern UINT32 mtk_wcn_consys_jtag_flag_ctrl(UINT32 en);
 #endif

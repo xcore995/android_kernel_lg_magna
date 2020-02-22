@@ -519,8 +519,8 @@ static INT32 mt6620_sw_init(P_WMT_HIF_CONF pWmtHifConf)
 	INT32 iRet = -1;
 	UINT32 u4Res = 0;
 	UINT8 evtBuf[256];
-	unsigend long ctrlPa1;
-	unsigned long ctrlPa2;
+	UINT32 ctrlPa1;
+	UINT32 ctrlPa2;
 	UINT32 hw_ver;
 
 	WMT_DBG_FUNC(" start\n");
@@ -740,8 +740,8 @@ static INT32 mt6620_sw_init(P_WMT_HIF_CONF pWmtHifConf)
 	INT32 iRet = -1;
 	UINT32 u4Res = 0;
 	UINT8 evtBuf[256];
-	unsigned long ctrlPa1;
-	unsigned long ctrlPa2;
+	UINT32 ctrlPa1;
+	UINT32 ctrlPa2;
 	UINT32 hw_ver;
 	UINT32 patch_num = 0;
 	UINT32 patch_index = 0;
@@ -1184,8 +1184,8 @@ static INT32 mt6620_ver_check(VOID)
 	UINT32 fw_ver;
 	INT32 iret;
 	const WMT_IC_INFO_S *p_info;
-	unsigned long ctrlPa1;
-	unsigned long ctrlPa2;
+	UINT32 ctrlPa1;
+	UINT32 ctrlPa2;
 
 	/* 1. identify chip versions: HVR(HW_VER) and FVR(FW_VER) */
 	WMT_LOUD_FUNC("MT6620: before read hw_ver (hw version)\n");
@@ -1280,7 +1280,7 @@ static const WMT_IC_INFO_S *mt6620_find_wmt_ic_info(const UINT32 hw_ver)
 static INT32 wmt_stp_init_coex(VOID)
 {
 	INT32 iRet;
-	unsigned long addr;
+	size_t addr;
 	WMT_GEN_CONF *pWmtGenConf;
 
 #define COEX_WMT  0

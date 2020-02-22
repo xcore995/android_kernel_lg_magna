@@ -1,5 +1,5 @@
 /*
-** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/windows/include/gl_typedef.h#1
+** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/windows/include/gl_typedef.h#1 $
 */
 
 /*! \file   gl_typedef.h
@@ -8,8 +8,10 @@
     In this file we define the basic data type.
 */
 
+
+
 /*
-** Log: gl_typedef.h
+** $Log: gl_typedef.h $
 **
 ** 09 17 2012 cm.chang
 ** [BORA00002149] [MT6630 Wi-Fi] Initial software development
@@ -40,6 +42,7 @@
 **
 */
 
+
 #ifndef _GL_TYPEDEF_H
 #define _GL_TYPEDEF_H
 
@@ -56,7 +59,7 @@ LINT_EXT_HEADER_BEGIN
 #include <ndis.h>		/* NDIS header */
 #include <intsafe.h>
 #include <stddef.h>
-LINT_EXT_HEADER_END
+    LINT_EXT_HEADER_END
 /*******************************************************************************
 *                              C O N S T A N T S
 ********************************************************************************
@@ -67,7 +70,7 @@ LINT_EXT_HEADER_END
 #ifndef FALSE
 #define FALSE               ((BOOL) 0)
 #define TRUE                ((BOOL) 1)
-#endif /* FALSE */
+#endif				/* FALSE */
 #ifndef NULL
 #if defined(__cplusplus)
 #define NULL            0
@@ -91,7 +94,8 @@ typedef unsigned char UCHAR, *PUCHAR;
 typedef unsigned short USHORT;
 typedef unsigned long ULONG;
 typedef unsigned long long ULONGLONG;
-#endif /* _lint */
+#endif				/* _lint */
+
 
 /* Type definition for void */
 typedef VOID * *PPVOID;
@@ -112,6 +116,7 @@ typedef ULONG UINT_32, *PUINT_32, **PPUINT_32;	/* 32-bit unsigned value & pointe
 typedef ULONGLONG UINT_64, *PUINT_64, **PPUINT_64;	/* 64-bit unsigned value & pointer */
 
 typedef UINT_32 OS_SYSTIME, *POS_SYSTIME;
+
 
 #ifdef _lint
 typedef UINT_32 NDIS_STATUS;
@@ -138,6 +143,7 @@ typedef struct _NDIS_PACKET {
 	UCHAR MiniportReservedEx[16];
 } NDIS_PACKET, *PNDIS_PACKET;
 
+
 extern void DbgPrint(PINT_8 Format, ...);
 extern void DbgBreakPoint(void);
 
@@ -149,7 +155,8 @@ extern void DbgBreakPoint(void);
 	((type *)(address))
 #endif
 
-#endif /* _lint */
+
+#endif				/* _lint */
 
 /*******************************************************************************
 *                            P U B L I C   D A T A
@@ -172,18 +179,20 @@ extern void DbgBreakPoint(void);
 #define __KAL_ATTRIB_PACKED__
 #define __KAL_ATTRIB_ALIGN_4__
 
+
 #ifndef BIT
 #define BIT(n)                          ((UINT_32) 1 << (n))
 #define BITS2(m, n)                      (BIT(m) | BIT(n))
-#define BITS3(m, n, o)                    (BIT(m) | BIT(n) | BIT(o))
-#define BITS4(m, n, o, p)                  (BIT(m) | BIT(n) | BIT(o) | BIT(p))
+#define BITS3(m, n, o)                    (BIT(m) | BIT (n) | BIT (o))
+#define BITS4(m, n, o, p)                  (BIT(m) | BIT (n) | BIT (o) | BIT(p))
 
 /* bits range: for example BITS(16,23) = 0xFF0000
  *   ==>  (BIT(m)-1)   = 0x0000FFFF     ~(BIT(m)-1)   => 0xFFFF0000
  *   ==>  (BIT(n+1)-1) = 0x00FFFFFF
  */
 #define BITS(m, n)                       (~(BIT(m)-1) & ((BIT(n) - 1) | BIT(n)))
-#endif /* BIT */
+#endif				/* BIT */
+
 
 /* This macro returns the byte offset of a named field in a known structure
    type.
@@ -195,8 +204,9 @@ extern void DbgBreakPoint(void);
 #define OFFSET_OF(_type, _field)    4
 #else
 #define OFFSET_OF(_type, _field)    ((UINT_32)&(((_type *)0)->_field))
-#endif /* _lint */
-#endif /* OFFSET_OF */
+#endif				/* _lint */
+#endif				/* OFFSET_OF */
+
 
 /* This macro returns the base address of an instance of a structure
  * given the type of the structure and the address of a field within the
@@ -213,40 +223,43 @@ extern void DbgBreakPoint(void);
 #else
 #define ENTRY_OF(_addrOfField, _type, _field) \
 	((_type *)((PINT_8)(_addrOfField) - (PINT_8)OFFSET_OF(_type, _field)))
-#endif /* _lint */
-#endif /* ENTRY_OF */
+#endif				/* _lint */
+#endif				/* ENTRY_OF */
+
 
 /* This macro align the input value to the DW boundary.
  * _value - value need to check
  */
 #ifndef ALIGN_4
 #define ALIGN_4(_value)            (((_value) + 3) & ~BITS(0, 1))
-#endif /* ALIGN_4 */
+#endif				/* ALIGN_4 */
 
 /* This macro check the DW alignment of the input value.
  * _value - value of address need to check
  */
 #ifndef IS_ALIGN_4
 #define IS_ALIGN_4(_value)          (((_value) & 0x3) ? FALSE : TRUE)
-#endif /* IS_ALIGN_4 */
+#endif				/* IS_ALIGN_4 */
 
 #ifndef IS_NOT_ALIGN_4
 #define IS_NOT_ALIGN_4(_value)      (((_value) & 0x3) ? TRUE : FALSE)
-#endif /* IS_NOT_ALIGN_4 */
+#endif				/* IS_NOT_ALIGN_4 */
+
 
 /* This macro evaluate the input length in unit of Double Word(4 Bytes).
  * _value - value in unit of Byte, output will round up to DW boundary.
  */
 #ifndef BYTE_TO_DWORD
 #define BYTE_TO_DWORD(_value)       ((_value + 3) >> 2)
-#endif /* BYTE_TO_DWORD */
+#endif				/* BYTE_TO_DWORD */
 
 /* This macro evaluate the input length in unit of Byte.
  * _value - value in unit of DW, output is in unit of Byte.
  */
 #ifndef DWORD_TO_BYTE
 #define DWORD_TO_BYTE(_value)       ((_value) << 2)
-#endif /* DWORD_TO_BYTE */
+#endif				/* DWORD_TO_BYTE */
+
 
 #define SWAP16(_x)   \
 	((UINT_16)((((UINT_16)(_x) & 0x00FF) << 8) | \
@@ -274,7 +287,7 @@ extern void DbgBreakPoint(void);
 
 #define HTONL(_x)           SWAP32(_x)
 
-#else /* Big-Endian */
+#else				/* Big-Endian */
 
 #define CONST_NTOHS(_x)
 
@@ -296,4 +309,4 @@ extern void DbgBreakPoint(void);
 ********************************************************************************
 */
 
-#endif /* _GL_TYPEDEF_H */
+#endif				/* _GL_TYPEDEF_H */

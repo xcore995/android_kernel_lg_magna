@@ -10,6 +10,7 @@
     description.
 */
 
+
 #ifndef _PWR_MGT_H
 #define _PWR_MGT_H
 /*******************************************************************************
@@ -34,6 +35,7 @@
 #define PM_UAPSD_ALL                        (PM_UAPSD_AC0 | PM_UAPSD_AC1 | PM_UAPSD_AC2 | PM_UAPSD_AC3)
 #define PM_UAPSD_NONE                       0
 
+
 /*******************************************************************************
 *                             D A T A   T Y P E S
 ********************************************************************************
@@ -46,6 +48,7 @@ typedef struct _PM_PROFILE_SETUP_INFO_T {
 	UINT_8 ucUapsdSp;	/* Number of triggered packets in UAPSD */
 
 } PM_PROFILE_SETUP_INFO_T, *P_PM_PROFILE_SETUP_INFO_T;
+
 
 /*******************************************************************************
 *                            P U B L I C   D A T A
@@ -86,6 +89,7 @@ typedef struct _PM_PROFILE_SETUP_INFO_T {
 	}
 #endif
 
+
 /*******************************************************************************
 *                   F U N C T I O N   D E C L A R A T I O N S
 ********************************************************************************
@@ -96,4 +100,4 @@ typedef struct _PM_PROFILE_SETUP_INFO_T {
 ********************************************************************************
 */
 
-#endif /* _PWR_MGT_H */
+#endif				/* _PWR_MGT_H */

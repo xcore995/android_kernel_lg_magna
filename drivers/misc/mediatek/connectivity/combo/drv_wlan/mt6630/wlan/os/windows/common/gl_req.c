@@ -1,5 +1,5 @@
 /*
-** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/windows/common/gl_req.c#1
+** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/windows/common/gl_req.c#1 $
 */
 
 /*! \file gl_req.c
@@ -10,8 +10,10 @@
     to access the ADAPTER_T or ARBITER FSM of WLAN Driver Core.
 */
 
+
+
 /*
-** Log: gl_req.c
+** $Log: gl_req.c $
 **
 ** 09 17 2012 cm.chang
 ** [BORA00002149] [MT6630 Wi-Fi] Initial software development
@@ -58,8 +60,7 @@
  * 03 19 2010 cp.wu
  * [WPD00001943]Create WiFi test driver framework on WinXP
  * 1) add ACPI D0/D3 state switching support
- * 2) use more formal way to handle interrupt
- *    when the status is retrieved from enhanced RX response
+ *  *  *  *  *  *  *  *  *  *  * 2) use more formal way to handle interrupt when the status is retrieved from enhanced RX response
  *
  * 02 23 2010 cp.wu
  * [WPD00001943]Create WiFi test driver framework on WinXP
@@ -109,6 +110,8 @@
 #include "config.h"
 #include "gl_os.h"
 
+extern WLAN_REQ_ENTRY arWlanOidReqTable[];
+
 /*******************************************************************************
 *                              C O N S T A N T S
 ********************************************************************************
@@ -134,6 +137,7 @@ NDIS_TASK_OFFLOAD arOffloadTasks[] = {
 	 sizeof(NDIS_TASK_TCP_IP_CHECKSUM)
 	 }
 };
+
 
 /*  */
 /* Get the number of offload tasks this miniport supports */
@@ -203,7 +207,8 @@ NDIS_TASK_TCP_IP_CHECKSUM rTcpIpChecksumTask = {
 	 OFFLOAD_V6_RX_UDP_CHKSUM_SUPPORT}
 	,
 };
-#endif /* CFG_TCP_IP_CHKSUM_OFFLOAD */
+#endif				/* CFG_TCP_IP_CHKSUM_OFFLOAD */
+
 
 /*******************************************************************************
 *                             D A T A   T Y P E S
@@ -257,23 +262,28 @@ reqQueryVendorDriverVersion(IN P_GLUE_INFO_T prGlueInfo,
 {
 	DEBUGFUNC("reqQueryVendorDriverVersion");
 
+
 	ASSERT(prGlueInfo);
 	ASSERT(pu4QryInfoLen);
 
 	*pu4QryInfoLen = sizeof(UINT_32);
 
-	if (u4QryBufLen < sizeof(UINT_32))
+	if (u4QryBufLen < sizeof(UINT_32)) {
 		return WLAN_STATUS_BUFFER_TOO_SHORT;
+	}
 
 	ASSERT(pvQryBuf);
 
-	*(PUINT_32) pvQryBuf = ((UINT_32) NIC_DRIVER_MAJOR_VERSION << 16) + (UINT_32) NIC_DRIVER_MINOR_VERSION;
 
-	DBGLOG1(REQ, INFO, "Vendor driver version: 0x%08x\n", *(PUINT_32) pvQryBuf);
+	*(PUINT_32) pvQryBuf = ((UINT_32) NIC_DRIVER_MAJOR_VERSION << 16) +
+	    (UINT_32) NIC_DRIVER_MINOR_VERSION;
+
+	DBGLOG(REQ, INFO, ("Vendor driver version: 0x%08x\n", *(PUINT_32) pvQryBuf));
 
 	return WLAN_STATUS_SUCCESS;
 
 }				/* end of reqQueryVendorDriverVersion() */
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -297,13 +307,15 @@ reqQueryHardwareStatus(IN P_GLUE_INFO_T prGlueInfo,
 {
 	DEBUGFUNC("reqQueryHardwareStatus");
 
+
 	ASSERT(prGlueInfo);
 	ASSERT(pu4QryInfoLen);
 
 	*pu4QryInfoLen = sizeof(NDIS_HARDWARE_STATUS);
 
-	if (u4QryBufLen < sizeof(NDIS_HARDWARE_STATUS))
+	if (u4QryBufLen < sizeof(NDIS_HARDWARE_STATUS)) {
 		return WLAN_STATUS_BUFFER_TOO_SHORT;
+	}
 
 	ASSERT(pvQryBuf);
 
@@ -312,6 +324,7 @@ reqQueryHardwareStatus(IN P_GLUE_INFO_T prGlueInfo,
 	return WLAN_STATUS_SUCCESS;
 
 }				/* end of reqQueryHardwareStatus() */
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -330,17 +343,20 @@ reqQueryHardwareStatus(IN P_GLUE_INFO_T prGlueInfo,
 */
 /*----------------------------------------------------------------------------*/
 WLAN_STATUS
-reqQueryMedia(IN P_GLUE_INFO_T prGlueInfo, OUT PVOID pvQryBuf, IN UINT_32 u4QryBufLen, OUT PUINT_32 pu4QryInfoLen)
+reqQueryMedia(IN P_GLUE_INFO_T prGlueInfo,
+	      OUT PVOID pvQryBuf, IN UINT_32 u4QryBufLen, OUT PUINT_32 pu4QryInfoLen)
 {
 	DEBUGFUNC("reqQueryMedia");
+
 
 	ASSERT(prGlueInfo);
 	ASSERT(pu4QryInfoLen);
 
 	*pu4QryInfoLen = sizeof(PNDIS_MEDIUM);
 
-	if (u4QryBufLen < sizeof(PNDIS_MEDIUM))
+	if (u4QryBufLen < sizeof(PNDIS_MEDIUM)) {
 		return WLAN_STATUS_BUFFER_TOO_SHORT;
+	}
 
 	ASSERT(pvQryBuf);
 
@@ -349,6 +365,7 @@ reqQueryMedia(IN P_GLUE_INFO_T prGlueInfo, OUT PVOID pvQryBuf, IN UINT_32 u4QryB
 	return WLAN_STATUS_SUCCESS;
 
 }				/* end of reqQueryMedia() */
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -373,6 +390,7 @@ reqQueryVendorDescription(IN P_GLUE_INFO_T prGlueInfo,
 
 	DEBUGFUNC("reqQueryVendorDescription");
 
+
 	ASSERT(prGlueInfo);
 	ASSERT(pu4QryInfoLen);
 
@@ -385,11 +403,13 @@ reqQueryVendorDescription(IN P_GLUE_INFO_T prGlueInfo,
 
 	ASSERT(pvQryBuf);
 
-	NdisMoveMemory(pvQryBuf, (PVOID) prGlueInfo->aucDriverDesc, (UINT_32) prGlueInfo->ucDriverDescLen);
+	NdisMoveMemory(pvQryBuf,
+		       (PVOID) prGlueInfo->aucDriverDesc, (UINT_32) prGlueInfo->ucDriverDescLen);
 
 	return WLAN_STATUS_SUCCESS;
 
 }				/* end of reqQueryVendorDescription() */
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -414,13 +434,15 @@ reqQueryDriverVersion(IN P_GLUE_INFO_T prGlueInfo,
 {
 	DEBUGFUNC("reqQueryDriverVersion");
 
+
 	ASSERT(prGlueInfo);
 	ASSERT(pu4QryInfoLen);
 
 	*pu4QryInfoLen = 2;
 
-	if (u4QryBufLen < 2)
+	if (u4QryBufLen < 2) {
 		return WLAN_STATUS_BUFFER_TOO_SHORT;
+	}
 
 	ASSERT(pvQryBuf);
 
@@ -429,6 +451,7 @@ reqQueryDriverVersion(IN P_GLUE_INFO_T prGlueInfo,
 	return WLAN_STATUS_SUCCESS;
 
 }				/* end of reqQueryDriverVersion() */
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -453,13 +476,15 @@ reqQueryPhysicalMedium(IN P_GLUE_INFO_T prGlueInfo,
 {
 	DEBUGFUNC("reqQueryPhysicalMedium");
 
+
 	ASSERT(prGlueInfo);
 	ASSERT(pu4QryInfoLen);
 
 	*pu4QryInfoLen = sizeof(NDIS_PHYSICAL_MEDIUM);
 
-	if (u4QryBufLen < sizeof(NDIS_PHYSICAL_MEDIUM))
+	if (u4QryBufLen < sizeof(NDIS_PHYSICAL_MEDIUM)) {
 		return WLAN_STATUS_BUFFER_TOO_SHORT;
+	}
 
 	ASSERT(pvQryBuf);
 
@@ -468,6 +493,7 @@ reqQueryPhysicalMedium(IN P_GLUE_INFO_T prGlueInfo,
 	return WLAN_STATUS_SUCCESS;
 
 }				/* end of reqQueryPhysicalMedium() */
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -486,19 +512,23 @@ reqQueryPhysicalMedium(IN P_GLUE_INFO_T prGlueInfo,
 */
 /*----------------------------------------------------------------------------*/
 WLAN_STATUS
-reqQueryMacOptions(IN P_GLUE_INFO_T prGlueInfo, OUT PVOID pvQryBuf, IN UINT_32 u4QryBufLen, OUT PUINT_32 pu4QryInfoLen)
+reqQueryMacOptions(IN P_GLUE_INFO_T prGlueInfo,
+		   OUT PVOID pvQryBuf, IN UINT_32 u4QryBufLen, OUT PUINT_32 pu4QryInfoLen)
 {
 	DEBUGFUNC("reqQueryMacOptions");
+
 
 	ASSERT(prGlueInfo);
 	ASSERT(pu4QryInfoLen);
 
 	*pu4QryInfoLen = sizeof(UINT_32);
 
-	if (u4QryBufLen < sizeof(UINT_32))
+	if (u4QryBufLen < sizeof(UINT_32)) {
 		return WLAN_STATUS_BUFFER_TOO_SHORT;
+	}
 
 	ASSERT(pvQryBuf);
+
 
 	/* NDIS_MAC_OPTION_COPY_LOOKAHEAD_DATA is set to indicate to the
 	   protocol that it can access the lookahead data by any means that
@@ -515,15 +545,18 @@ reqQueryMacOptions(IN P_GLUE_INFO_T prGlueInfo, OUT PVOID pvQryBuf, IN UINT_32 u
 #if defined(WINDOWS_CE)		/* No Windows XP until 802.1p mechanism is clear */
 	*(PUINT_32) pvQryBuf = (UINT_32) (NDIS_MAC_OPTION_TRANSFERS_NOT_PEND |
 					  NDIS_MAC_OPTION_COPY_LOOKAHEAD_DATA |
-					  NDIS_MAC_OPTION_NO_LOOPBACK | NDIS_MAC_OPTION_8021P_PRIORITY);
+					  NDIS_MAC_OPTION_NO_LOOPBACK |
+					  NDIS_MAC_OPTION_8021P_PRIORITY);
 #else
 	*(PUINT_32) pvQryBuf = (UINT_32) (NDIS_MAC_OPTION_TRANSFERS_NOT_PEND |
-					  NDIS_MAC_OPTION_COPY_LOOKAHEAD_DATA | NDIS_MAC_OPTION_NO_LOOPBACK);
+					  NDIS_MAC_OPTION_COPY_LOOKAHEAD_DATA |
+					  NDIS_MAC_OPTION_NO_LOOPBACK);
 #endif
 
 	return WLAN_STATUS_SUCCESS;
 
 }				/* end of reqQueryMacOptions() */
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -548,26 +581,29 @@ reqQueryMediaConnectStatus(IN P_GLUE_INFO_T prGlueInfo,
 {
 	DEBUGFUNC("wlanoidQueryMediaConnectStatus");
 
+
 	ASSERT(prGlueInfo);
 	ASSERT(pu4QryInfoLen);
 
 	*pu4QryInfoLen = sizeof(ENUM_PARAM_MEDIA_STATE_T);
 
-	if (u4QryBufLen < sizeof(ENUM_PARAM_MEDIA_STATE_T))
+	if (u4QryBufLen < sizeof(ENUM_PARAM_MEDIA_STATE_T)) {
 		return WLAN_STATUS_BUFFER_TOO_SHORT;
+	}
 
 	ASSERT(pvQryBuf);
 
 	/* Now we simply return our status (NdisMediaState[Dis]Connected) */
 	*(P_ENUM_PARAM_MEDIA_STATE_T) pvQryBuf = prGlueInfo->eParamMediaStateIndicated;
 
-	DBGLOG2(REQ, INFO, "Media State: %s\n",
+	DBGLOG(REQ, INFO, ("Media State: %s\n",
 			   ((prGlueInfo->eParamMediaStateIndicated == PARAM_MEDIA_STATE_CONNECTED) ?
-			    "Connected" : "Disconnected");
+			    "Connected" : "Disconnected")));
 
 	return WLAN_STATUS_SUCCESS;
 
 }				/* end of reqQueryMediaConnectStatus() */
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -591,13 +627,15 @@ reqQueryMaxFrameSize(IN P_GLUE_INFO_T prGlueInfo,
 {
 	DEBUGFUNC("reqQueryMaxFrameSize");
 
+
 	ASSERT(prGlueInfo);
 	ASSERT(pu4QueryInfoLen);
 
 	*pu4QueryInfoLen = sizeof(UINT_32);
 
-	if (u4QueryBufLen < sizeof(UINT_32))
+	if (u4QueryBufLen < sizeof(UINT_32)) {
 		return WLAN_STATUS_BUFFER_TOO_SHORT;
+	}
 
 	ASSERT(pvQueryBuf);
 
@@ -606,6 +644,7 @@ reqQueryMaxFrameSize(IN P_GLUE_INFO_T prGlueInfo,
 	return WLAN_STATUS_SUCCESS;
 
 }				/* end of reqQueryMaxFrameSize() */
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -630,13 +669,15 @@ reqQueryTxBufferSpace(IN P_GLUE_INFO_T prGlueInfo,
 {
 	DEBUGFUNC("reqQueryTxBufferSpace");
 
+
 	ASSERT(prGlueInfo);
 	ASSERT(pu4QueryInfoLen);
 
 	*pu4QueryInfoLen = sizeof(UINT_32);
 
-	if (u4QueryBufLen < sizeof(UINT_32))
+	if (u4QueryBufLen < sizeof(UINT_32)) {
 		return WLAN_STATUS_INVALID_LENGTH;
+	}
 
 	ASSERT(pvQueryBuf);
 
@@ -645,6 +686,7 @@ reqQueryTxBufferSpace(IN P_GLUE_INFO_T prGlueInfo,
 	return WLAN_STATUS_SUCCESS;
 
 }				/* end of reqQueryTxBufferSpace() */
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -669,13 +711,15 @@ reqQueryRxBufferSpace(IN P_GLUE_INFO_T prGlueInfo,
 {
 	DEBUGFUNC("reqQueryRxBufferSpace");
 
+
 	ASSERT(prGlueInfo);
 	ASSERT(pu4QueryInfoLen);
 
 	*pu4QueryInfoLen = sizeof(UINT_32);
 
-	if (u4QueryBufLen < sizeof(UINT_32))
+	if (u4QueryBufLen < sizeof(UINT_32)) {
 		return WLAN_STATUS_INVALID_LENGTH;
+	}
 
 	ASSERT(pvQueryBuf);
 
@@ -684,6 +728,7 @@ reqQueryRxBufferSpace(IN P_GLUE_INFO_T prGlueInfo,
 	return WLAN_STATUS_SUCCESS;
 
 }				/* end of reqQueryRxBufferSpace() */
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -708,13 +753,15 @@ reqQueryMaxTotalSize(IN P_GLUE_INFO_T prGlueInfo,
 {
 	DEBUGFUNC("reqQueryMaxTotalSize");
 
+
 	ASSERT(prGlueInfo);
 	ASSERT(pu4QueryInfoLen);
 
 	*pu4QueryInfoLen = sizeof(UINT_32);
 
-	if (u4QueryBufLen < sizeof(UINT_32))
+	if (u4QueryBufLen < sizeof(UINT_32)) {
 		return WLAN_STATUS_INVALID_LENGTH;
+	}
 
 	ASSERT(pvQueryBuf);
 
@@ -723,6 +770,7 @@ reqQueryMaxTotalSize(IN P_GLUE_INFO_T prGlueInfo,
 	return WLAN_STATUS_SUCCESS;
 
 }				/* end of reqQueryMaxTotalSize() */
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -743,17 +791,20 @@ reqQueryMaxTotalSize(IN P_GLUE_INFO_T prGlueInfo,
 /*----------------------------------------------------------------------------*/
 WLAN_STATUS
 reqQueryRcvErrorAlignment(IN P_GLUE_INFO_T prGlueInfo,
-			  OUT PVOID pvQueryBuf, IN UINT_32 u4QueryBufLen, OUT PUINT_32 pu4QueryInfoLen)
+			  OUT PVOID pvQueryBuf,
+			  IN UINT_32 u4QueryBufLen, OUT PUINT_32 pu4QueryInfoLen)
 {
 	DEBUGFUNC("reqQueryRcvErrorAlignment");
+
 
 	ASSERT(prGlueInfo);
 	ASSERT(pu4QueryInfoLen);
 
 	*pu4QueryInfoLen = sizeof(UINT_32);
 
-	if (u4QueryBufLen < sizeof(UINT_32))
+	if (u4QueryBufLen < sizeof(UINT_32)) {
 		return WLAN_STATUS_INVALID_LENGTH;
+	}
 
 	ASSERT(pvQueryBuf);
 
@@ -762,6 +813,7 @@ reqQueryRcvErrorAlignment(IN P_GLUE_INFO_T prGlueInfo,
 	return WLAN_STATUS_SUCCESS;
 
 }				/* end of reqQueryRcvErrorAlignment() */
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -795,6 +847,7 @@ reqSetCurrentLookahead(IN P_GLUE_INFO_T prGlueInfo,
 
 }				/* end of reqSetCurrentLookahead() */
 
+
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief This routine is called to query the maximum number of send packets
@@ -818,13 +871,15 @@ reqQueryMaxSendPackets(IN P_GLUE_INFO_T prGlueInfo,
 {
 	DEBUGFUNC("reqQueryMaxSendPackets");
 
+
 	ASSERT(prGlueInfo);
 	ASSERT(pu4QueryInfoLen);
 
 	*pu4QueryInfoLen = sizeof(UINT_32);
 
-	if (u4QueryBufLen < sizeof(UINT_32))
+	if (u4QueryBufLen < sizeof(UINT_32)) {
 		return WLAN_STATUS_INVALID_LENGTH;
+	}
 
 	ASSERT(pvQueryBuf);
 
@@ -833,6 +888,7 @@ reqQueryMaxSendPackets(IN P_GLUE_INFO_T prGlueInfo,
 	return WLAN_STATUS_SUCCESS;
 
 }				/* end of reqQueryMaxSendPackets() */
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -852,17 +908,20 @@ reqQueryMaxSendPackets(IN P_GLUE_INFO_T prGlueInfo,
 */
 /*----------------------------------------------------------------------------*/
 WLAN_STATUS
-reqQueryMaxListSize(IN P_GLUE_INFO_T prGlueInfo, OUT PVOID pvQryBuf, IN UINT_32 u4QryBufLen, OUT PUINT_32 pu4QryInfoLen)
+reqQueryMaxListSize(IN P_GLUE_INFO_T prGlueInfo,
+		    OUT PVOID pvQryBuf, IN UINT_32 u4QryBufLen, OUT PUINT_32 pu4QryInfoLen)
 {
 	DEBUGFUNC("reqQueryMaxListSize");
+
 
 	ASSERT(prGlueInfo);
 	ASSERT(pu4QryInfoLen);
 
 	*pu4QryInfoLen = sizeof(UINT_32);
 
-	if (u4QryBufLen < sizeof(UINT_32))
+	if (u4QryBufLen < sizeof(UINT_32)) {
 		return WLAN_STATUS_INVALID_LENGTH;
+	}
 
 	ASSERT(pvQryBuf);
 
@@ -871,6 +930,7 @@ reqQueryMaxListSize(IN P_GLUE_INFO_T prGlueInfo, OUT PVOID pvQryBuf, IN UINT_32 
 	return WLAN_STATUS_SUCCESS;
 
 }				/* end of reqQueryMaxListSize() */
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -896,13 +956,15 @@ reqQueryPnPCapabilities(IN P_GLUE_INFO_T prGlueInfo,
 
 	DEBUGFUNC("pwrmgtQueryPnPCapabilities");
 
+
 	ASSERT(prGlueInfo);
 	ASSERT(pu4QueryInfoLen);
 
 	*pu4QueryInfoLen = sizeof(NDIS_PNP_CAPABILITIES);
 
-	if (u4QueryBufLen < sizeof(NDIS_PNP_CAPABILITIES))
+	if (u4QueryBufLen < sizeof(NDIS_PNP_CAPABILITIES)) {
 		return WLAN_STATUS_BUFFER_TOO_SHORT;
+	}
 
 	ASSERT(pvQueryBuf);
 
@@ -926,6 +988,7 @@ reqQueryPnPCapabilities(IN P_GLUE_INFO_T prGlueInfo,
 
 }				/* end of reqQueryPnPCapabilities() */
 
+
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief This routine is called to query the information elements
@@ -946,24 +1009,29 @@ reqQueryPnPCapabilities(IN P_GLUE_INFO_T prGlueInfo,
 /*----------------------------------------------------------------------------*/
 WLAN_STATUS
 reqQueryAssocInfo(IN P_GLUE_INFO_T prGlueInfo,
-		  OUT PVOID pvQueryBuffer, IN UINT_32 u4QueryBufferLen, OUT PUINT_32 pu4QueryInfoLen)
+		  OUT PVOID pvQueryBuffer,
+		  IN UINT_32 u4QueryBufferLen, OUT PUINT_32 pu4QueryInfoLen)
 {
 
 #if DBG
-	PNDIS_802_11_ASSOCIATION_INFORMATION prAssocInfo = (PNDIS_802_11_ASSOCIATION_INFORMATION) pvQueryBuffer;
+	PNDIS_802_11_ASSOCIATION_INFORMATION prAssocInfo =
+	    (PNDIS_802_11_ASSOCIATION_INFORMATION) pvQueryBuffer;
 	PUINT_8 cp;
 #endif
 
 	DEBUGFUNC("wlanoidQueryAssocInfo");
 
+
 	ASSERT(prGlueInfo);
 	ASSERT(pu4QueryInfoLen);
 
 	*pu4QueryInfoLen = sizeof(NDIS_802_11_ASSOCIATION_INFORMATION) +
-	    prGlueInfo->rNdisAssocInfo.RequestIELength + prGlueInfo->rNdisAssocInfo.ResponseIELength;
+	    prGlueInfo->rNdisAssocInfo.RequestIELength +
+	    prGlueInfo->rNdisAssocInfo.ResponseIELength;
 
-	if (u4QueryBufferLen < *pu4QueryInfoLen)
+	if (u4QueryBufferLen < *pu4QueryInfoLen) {
 		return WLAN_STATUS_INVALID_LENGTH;
+	}
 
 	ASSERT(pvQueryBuffer);
 
@@ -971,28 +1039,33 @@ reqQueryAssocInfo(IN P_GLUE_INFO_T prGlueInfo,
 
 #if DBG
 	/* Dump the PARAM_ASSOCIATION_INFORMATION content. */
-	DBGLOG1(REQ, INFO, "QUERY: Assoc Info - Length: %d\n", prAssocInfo->Length);
+	DBGLOG(REQ, INFO, ("QUERY: Assoc Info - Length: %d\n", prAssocInfo->Length));
 
-	DBGLOG1(REQ, INFO, "AvailableRequestFixedIEs: 0x%04x\n", prAssocInfo->AvailableRequestFixedIEs);
-	DBGLOG1(REQ, INFO, "Request Capabilities: 0x%04x\n", prAssocInfo->RequestFixedIEs.Capabilities);
-	DBGLOG1(REQ, INFO, "Request Listen Interval: 0x%04x\n", prAssocInfo->RequestFixedIEs.ListenInterval);
+	DBGLOG(REQ, INFO, ("AvailableRequestFixedIEs: 0x%04x\n",
+			   prAssocInfo->AvailableRequestFixedIEs));
+	DBGLOG(REQ, INFO, ("Request Capabilities: 0x%04x\n",
+			   prAssocInfo->RequestFixedIEs.Capabilities));
+	DBGLOG(REQ, INFO, ("Request Listen Interval: 0x%04x\n",
+			   prAssocInfo->RequestFixedIEs.ListenInterval));
 	cp = (PUINT_8) &prAssocInfo->RequestFixedIEs.CurrentAPAddress;
-	DBGLOG2(REQ, INFO, "CurrentAPAddress: %02x-%02x-%02x-%02x-%02x-%02x\n",
-			   cp[0], cp[1], cp[2], cp[3], cp[4], cp[5];
-	DBGLOG2(REQ, INFO, "Request IEs: length=%d, offset=%d\n",
-			   prAssocInfo->RequestIELength, prAssocInfo->OffsetRequestIEs;
+	DBGLOG(REQ, INFO, ("CurrentAPAddress: %02x-%02x-%02x-%02x-%02x-%02x\n",
+			   cp[0], cp[1], cp[2], cp[3], cp[4], cp[5]));
+	DBGLOG(REQ, INFO, ("Request IEs: length=%d, offset=%d\n",
+			   prAssocInfo->RequestIELength, prAssocInfo->OffsetRequestIEs));
 
-	cp = (PUINT_8) pvQueryBuffer + sizeof(NDIS_802_11_ASSOCIATION_INFORMATION;
+	cp = (PUINT_8) pvQueryBuffer + sizeof(NDIS_802_11_ASSOCIATION_INFORMATION);
 	DBGLOG_MEM8(REQ, INFO, cp, prAssocInfo->RequestIELength);
 	cp += prAssocInfo->RequestIELength;
 
-	DBGLOG1(REQ, INFO, "AvailableResponseFixedIEs: 0x%04x\n", prAssocInfo->AvailableResponseFixedIEs);
-	DBGLOG1(REQ, INFO, "Response Capabilities: 0x%04x\n", prAssocInfo->ResponseFixedIEs.Capabilities);
-	DBGLOG1(REQ, INFO, "StatusCode: 0x%04x\n", prAssocInfo->ResponseFixedIEs.StatusCode);
-	DBGLOG1(REQ, INFO, "AssociationId: 0x%04x\n", prAssocInfo->ResponseFixedIEs.AssociationId);
-	DBGLOG2(REQ, INFO, "Response IEs: length=%d, offset=%d\n",
-			   prAssocInfo->ResponseIELength, prAssocInfo->OffsetResponseIEs;
-	DBGLOG_MEM8(REQ, INFO, cp, prAssocInfo->ResponseIELength;
+	DBGLOG(REQ, INFO, ("AvailableResponseFixedIEs: 0x%04x\n",
+			   prAssocInfo->AvailableResponseFixedIEs));
+	DBGLOG(REQ, INFO, ("Response Capabilities: 0x%04x\n",
+			   prAssocInfo->ResponseFixedIEs.Capabilities));
+	DBGLOG(REQ, INFO, ("StatusCode: 0x%04x\n", prAssocInfo->ResponseFixedIEs.StatusCode));
+	DBGLOG(REQ, INFO, ("AssociationId: 0x%04x\n", prAssocInfo->ResponseFixedIEs.AssociationId));
+	DBGLOG(REQ, INFO, ("Response IEs: length=%d, offset=%d\n",
+			   prAssocInfo->ResponseIELength, prAssocInfo->OffsetResponseIEs));
+	DBGLOG_MEM8(REQ, INFO, cp, prAssocInfo->ResponseIELength);
 #endif
 
 	return WLAN_STATUS_SUCCESS;
@@ -1018,7 +1091,8 @@ reqQueryAssocInfo(IN P_GLUE_INFO_T prGlueInfo,
 /*----------------------------------------------------------------------------*/
 WLAN_STATUS
 reqExtQueryConfiguration(IN P_GLUE_INFO_T prGlueInfo,
-			 OUT PVOID pvQueryBuffer, IN UINT_32 u4QueryBufferLen, OUT PUINT_32 pu4QueryInfoLen)
+			 OUT PVOID pvQueryBuffer,
+			 IN UINT_32 u4QueryBufferLen, OUT PUINT_32 pu4QueryInfoLen)
 {
 	P_PARAM_802_11_CONFIG_T prQueryConfig = (P_PARAM_802_11_CONFIG_T) pvQueryBuffer;
 	WLAN_STATUS rStatus = WLAN_STATUS_SUCCESS;
@@ -1026,12 +1100,14 @@ reqExtQueryConfiguration(IN P_GLUE_INFO_T prGlueInfo,
 
 	DEBUGFUNC("wlanoidQueryConfiguration");
 
+
 	ASSERT(prGlueInfo);
 	ASSERT(pu4QueryInfoLen);
 
 	*pu4QueryInfoLen = sizeof(PARAM_802_11_CONFIG_T);
-	if (u4QueryBufferLen < sizeof(PARAM_802_11_CONFIG_T))
+	if (u4QueryBufferLen < sizeof(PARAM_802_11_CONFIG_T)) {
 		return WLAN_STATUS_INVALID_LENGTH;
+	}
 
 	ASSERT(pvQueryBuffer);
 
@@ -1042,27 +1118,31 @@ reqExtQueryConfiguration(IN P_GLUE_INFO_T prGlueInfo,
 
 	/* beacon interval */
 	rStatus = wlanoidQueryBeaconInterval(prGlueInfo->prAdapter,
-					     &prQueryConfig->u4BeaconPeriod, sizeof(UINT_32), &u4QueryInfoLen);
+					     &prQueryConfig->u4BeaconPeriod,
+					     sizeof(UINT_32), &u4QueryInfoLen);
 
 	if (rStatus != WLAN_STATUS_SUCCESS)
 		return rStatus;
 
 	/* ATIM Window */
 	rStatus = wlanoidQueryAtimWindow(prGlueInfo->prAdapter,
-					 &prQueryConfig->u4ATIMWindow, sizeof(UINT_32), &u4QueryInfoLen);
+					 &prQueryConfig->u4ATIMWindow,
+					 sizeof(UINT_32), &u4QueryInfoLen);
 
 	if (rStatus != WLAN_STATUS_SUCCESS)
 		return rStatus;
 
 	/* frequency setting */
 	rStatus = wlanoidQueryFrequency(prGlueInfo->prAdapter,
-					&prQueryConfig->u4DSConfig, sizeof(UINT_32), &u4QueryInfoLen);
+					&prQueryConfig->u4DSConfig,
+					sizeof(UINT_32), &u4QueryInfoLen);
 
 	prQueryConfig->rFHConfig.u4Length = sizeof(PARAM_802_11_CONFIG_FH_T);
 
 	return rStatus;
 
 }				/* end of reqExtQueryConfiguration() */
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1097,8 +1177,9 @@ reqExtSetConfiguration(IN P_GLUE_INFO_T prGlueInfo,
 
 	*pu4SetInfoLen = sizeof(PARAM_802_11_CONFIG_T);
 
-	if (u4SetBufferLen < *pu4SetInfoLen)
+	if (u4SetBufferLen < *pu4SetInfoLen) {
 		return WLAN_STATUS_INVALID_LENGTH;
+	}
 
 	/* OID_802_11_CONFIGURATION. If associated, NOT_ACCEPTED shall be returned. */
 	if (wlanQueryTestMode(prGlueInfo->prAdapter) == FALSE &&
@@ -1110,22 +1191,27 @@ reqExtSetConfiguration(IN P_GLUE_INFO_T prGlueInfo,
 
 	/* beacon interval */
 	rStatus = wlanoidSetBeaconInterval(prGlueInfo->prAdapter,
-					   &prNewConfig->u4BeaconPeriod, sizeof(UINT_32), pu4SetInfoLen);
+					   &prNewConfig->u4BeaconPeriod,
+					   sizeof(UINT_32), pu4SetInfoLen);
 
-	if (wlanQueryTestMode(prGlueInfo->prAdapter) == FALSE && rStatus != WLAN_STATUS_SUCCESS)
+	if (wlanQueryTestMode(prGlueInfo->prAdapter) == FALSE && rStatus != WLAN_STATUS_SUCCESS) {
 		return rStatus;
+	}
 	/* ATIM Window */
 	rStatus = wlanoidSetAtimWindow(prGlueInfo->prAdapter,
 				       &prNewConfig->u4ATIMWindow, sizeof(UINT_32), pu4SetInfoLen);
 
-	if (wlanQueryTestMode(prGlueInfo->prAdapter) == FALSE && rStatus != WLAN_STATUS_SUCCESS)
+	if (wlanQueryTestMode(prGlueInfo->prAdapter) == FALSE && rStatus != WLAN_STATUS_SUCCESS) {
 		return rStatus;
+	}
 	/* frequency setting */
-	rStatus = wlanoidSetFrequency(prGlueInfo->prAdapter, &prNewConfig->u4DSConfig, sizeof(UINT_32), pu4SetInfoLen);
+	rStatus = wlanoidSetFrequency(prGlueInfo->prAdapter,
+				      &prNewConfig->u4DSConfig, sizeof(UINT_32), pu4SetInfoLen);
 
 	return rStatus;
 
 }				/* end of reqExtSetConfiguration() */
+
 
 #if CFG_TCP_IP_CHKSUM_OFFLOAD
 /*----------------------------------------------------------------------------*/
@@ -1147,7 +1233,8 @@ reqExtSetConfiguration(IN P_GLUE_INFO_T prGlueInfo,
 /*----------------------------------------------------------------------------*/
 NDIS_STATUS
 reqQueryTaskOffload(IN P_GLUE_INFO_T prGlueInfo,
-		    OUT PVOID pvQueryBuffer, IN UINT_32 u4QueryBufferLen, OUT PUINT_32 pu4QueryInfoLen)
+		    OUT PVOID pvQueryBuffer,
+		    IN UINT_32 u4QueryBufferLen, OUT PUINT_32 pu4QueryInfoLen)
 {
 	PNDIS_TASK_OFFLOAD_HEADER prNdisTaskOffloadHdr;
 	PNDIS_TASK_OFFLOAD prTaskOffload;
@@ -1156,6 +1243,7 @@ reqQueryTaskOffload(IN P_GLUE_INFO_T prGlueInfo,
 	UINT_32 i;
 
 	DEBUGFUNC("reqQueryTaskOffload");
+
 
 	ASSERT(prGlueInfo);
 	ASSERT(pu4QueryInfoLen);
@@ -1169,7 +1257,8 @@ reqQueryTaskOffload(IN P_GLUE_INFO_T prGlueInfo,
 
 	if (u4InfoLen > u4QueryBufferLen) {
 		*pu4QueryInfoLen = u4InfoLen;
-		DBGLOG1(REQ, TRACE, "ulInfoLen(%d) > queryBufferLen(%d)\n", u4InfoLen, u4QueryBufferLen);
+		DBGLOG(REQ, TRACE, ("ulInfoLen(%d) > queryBufferLen(%d)\n",
+				    u4InfoLen, u4QueryBufferLen));
 		return NDIS_STATUS_BUFFER_TOO_SHORT;
 	}
 
@@ -1184,7 +1273,7 @@ reqQueryTaskOffload(IN P_GLUE_INFO_T prGlueInfo,
 	/* Assume the miniport only supports IEEE_802_3_Encapsulation type */
 	/*  */
 	if (prNdisTaskOffloadHdr->EncapsulationFormat.Encapsulation != IEEE_802_3_Encapsulation) {
-		DBGLOG1(REQ, TRACE, "Encapsulation  type is not supported.\n");
+		DBGLOG(REQ, TRACE, ("Encapsulation  type is not supported.\n"));
 
 		prNdisTaskOffloadHdr->OffsetFirstTask = 0;
 		return NDIS_STATUS_NOT_SUPPORTED;
@@ -1194,7 +1283,7 @@ reqQueryTaskOffload(IN P_GLUE_INFO_T prGlueInfo,
 	/*  */
 	if ((prNdisTaskOffloadHdr->Size != sizeof(NDIS_TASK_OFFLOAD_HEADER)) ||
 	    (prNdisTaskOffloadHdr->Version != NDIS_TASK_OFFLOAD_VERSION)) {
-		DBGLOG1(REQ, TRACE, "Size or Version is not correct.\n");
+		DBGLOG(REQ, TRACE, ("Size or Version is not correct.\n"));
 
 		prNdisTaskOffloadHdr->OffsetFirstTask = 0;
 		return NDIS_STATUS_NOT_SUPPORTED;
@@ -1209,7 +1298,8 @@ reqQueryTaskOffload(IN P_GLUE_INFO_T prGlueInfo,
 	/*  */
 	/* Fill TCP/IP checksum and TCP large send task offload structures */
 	/*  */
-	prTaskOffload = (PNDIS_TASK_OFFLOAD) ((PUCHAR) (pvQueryBuffer) + prNdisTaskOffloadHdr->Size);
+	prTaskOffload = (PNDIS_TASK_OFFLOAD) ((PUCHAR) (pvQueryBuffer) +
+					      prNdisTaskOffloadHdr->Size);
 	/*  */
 	/* Fill all the offload capabilities the miniport supports. */
 	/*  */
@@ -1224,7 +1314,8 @@ reqQueryTaskOffload(IN P_GLUE_INFO_T prGlueInfo,
 		/*  */
 		if (i != u4OffloadTasksCount - 1) {
 			prTaskOffload->OffsetNextTask =
-			    FIELD_OFFSET(NDIS_TASK_OFFLOAD, TaskBuffer) + prTaskOffload->TaskBufferLength;
+			    FIELD_OFFSET(NDIS_TASK_OFFLOAD,
+					 TaskBuffer) + prTaskOffload->TaskBufferLength;
 		} else {
 			prTaskOffload->OffsetNextTask = 0;
 		}
@@ -1234,9 +1325,11 @@ reqQueryTaskOffload(IN P_GLUE_INFO_T prGlueInfo,
 			/* TCP/IP checksum task offload */
 			/*  */
 		case TcpIpChecksumNdisTask:
-			prTcpIpChecksumTask = (PNDIS_TASK_TCP_IP_CHECKSUM) prTaskOffload->TaskBuffer;
+			prTcpIpChecksumTask =
+			    (PNDIS_TASK_TCP_IP_CHECKSUM) prTaskOffload->TaskBuffer;
 
-			NdisMoveMemory(prTcpIpChecksumTask, &rTcpIpChecksumTask, sizeof(rTcpIpChecksumTask));
+			NdisMoveMemory(prTcpIpChecksumTask,
+				       &rTcpIpChecksumTask, sizeof(rTcpIpChecksumTask));
 			break;
 
 		default:
@@ -1257,12 +1350,13 @@ reqQueryTaskOffload(IN P_GLUE_INFO_T prGlueInfo,
 	/*  */
 	*pu4QueryInfoLen = u4InfoLen;
 
-	DBGLOG1(REQ, TRACE, "Offloading is set.\n");
+	DBGLOG(REQ, TRACE, ("Offloading is set.\n"));
 	/* DBGLOG_MEM8(REQ, TRACE, queryBuffer_p, queryBufferLen); */
 
 	return NDIS_STATUS_SUCCESS;
 
 }				/* end of reqQueryTaskOffload() */
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1299,6 +1393,7 @@ reqExtSetTaskOffload(IN P_GLUE_INFO_T prGlueInfo,
 
 	DEBUGFUNC("reqExtSetTaskOffload");
 
+
 	ASSERT(prGlueInfo);
 	ASSERT(pu4SetInfoLen);
 
@@ -1312,8 +1407,8 @@ reqExtSetTaskOffload(IN P_GLUE_INFO_T prGlueInfo,
 	/*  */
 	pNdisTaskOffloadHdr = (PNDIS_TASK_OFFLOAD_HEADER) prSetBuffer;
 	if (pNdisTaskOffloadHdr->EncapsulationFormat.Encapsulation != IEEE_802_3_Encapsulation) {
-		DBGLOG2(REQ, TRACE,
-		       "pNdisTaskOffloadHdr->EncapsulationFormat.Encapsulation != IEEE_802_3_Encapsulation\n");
+		DBGLOG(REQ, TRACE,
+		       ("pNdisTaskOffloadHdr->EncapsulationFormat.Encapsulation != IEEE_802_3_Encapsulation\n"));
 		pNdisTaskOffloadHdr->OffsetFirstTask = 0;
 		return NDIS_STATUS_INVALID_DATA;
 	}
@@ -1322,7 +1417,7 @@ reqExtSetTaskOffload(IN P_GLUE_INFO_T prGlueInfo,
 	/*  */
 	if (pNdisTaskOffloadHdr->OffsetFirstTask == 0) {
 		*pu4SetInfoLen = u4SetBufferLen;
-		DBGLOG1(REQ, TRACE, "No offload task is set!!\n");
+		DBGLOG(REQ, TRACE, ("No offload task is set!!\n"));
 
 		/* Disable HW engine for checksum offload function */
 		u4FlagTcpIpChksum = 0;
@@ -1336,9 +1431,9 @@ reqExtSetTaskOffload(IN P_GLUE_INFO_T prGlueInfo,
 	/* OffsetFirstTask is not valid */
 	/*  */
 	if (pNdisTaskOffloadHdr->OffsetFirstTask < pNdisTaskOffloadHdr->Size) {
-		DBGLOG2(REQ, TRACE,
-		       "pNdisTaskOffloadHdr->OffsetFirstTask (%d) < pNdisTaskOffloadHdr->Size (%d)\n",
-			pNdisTaskOffloadHdr->OffsetFirstTask, pNdisTaskOffloadHdr->Size);
+		DBGLOG(REQ, TRACE,
+		       ("pNdisTaskOffloadHdr->OffsetFirstTask (%d) < pNdisTaskOffloadHdr->Size (%d)\n",
+			pNdisTaskOffloadHdr->OffsetFirstTask, pNdisTaskOffloadHdr->Size));
 		pNdisTaskOffloadHdr->OffsetFirstTask = 0;
 		return NDIS_STATUS_FAILURE;
 	}
@@ -1348,8 +1443,8 @@ reqExtSetTaskOffload(IN P_GLUE_INFO_T prGlueInfo,
 	if (u4SetBufferLen < (pNdisTaskOffloadHdr->OffsetFirstTask + sizeof(NDIS_TASK_OFFLOAD))) {
 		*pu4SetInfoLen = pNdisTaskOffloadHdr->OffsetFirstTask + sizeof(NDIS_TASK_OFFLOAD);
 
-		DBGLOG2(REQ, TRACE,
-		       "response of task offload does not have sufficient space even for 1 offload task!!\n");
+		DBGLOG(REQ, TRACE,
+		       ("response of task offload does not have sufficient space even for 1 offload task!!\n"));
 		return NDIS_STATUS_INVALID_LENGTH;
 	}
 	/*  */
@@ -1389,8 +1484,9 @@ reqExtSetTaskOffload(IN P_GLUE_INFO_T prGlueInfo,
 			/*  */
 			/* Version is mismatched */
 			/*  */
-			if (i == u4OffloadTasksCount)
+			if (i == u4OffloadTasksCount) {
 				return NDIS_STATUS_NOT_SUPPORTED;
+			}
 			/*  */
 			/* This miniport support TCP/IP checksum offload only with sending TCP */
 			/* and IP checksum with TCP/IP options. */
@@ -1404,10 +1500,11 @@ reqExtSetTaskOffload(IN P_GLUE_INFO_T prGlueInfo,
 				/* If the miniport doesn't support sending IP checksum, we can't enable */
 				/* this capabilities */
 				/*  */
-				if (rTcpIpChecksumTask.V4Transmit.IpChecksum == 0)
+				if (rTcpIpChecksumTask.V4Transmit.IpChecksum == 0) {
 					return NDIS_STATUS_NOT_SUPPORTED;
+				}
 
-				DBGLOG1(REQ, TRACE, "Set Sending IP offloading.\n");
+				DBGLOG(REQ, TRACE, ("Set Sending IP offloading.\n"));
 				/*  */
 				/* Enable sending IP checksum */
 				/*  */
@@ -1419,10 +1516,11 @@ reqExtSetTaskOffload(IN P_GLUE_INFO_T prGlueInfo,
 				/* If miniport doesn't support sending TCP checksum, we can't enable */
 				/* this capability */
 				/*  */
-				if (rTcpIpChecksumTask.V4Transmit.TcpChecksum == 0)
+				if (rTcpIpChecksumTask.V4Transmit.TcpChecksum == 0) {
 					return NDIS_STATUS_NOT_SUPPORTED;
+				}
 
-				DBGLOG1(REQ, TRACE, "Set Sending TCP offloading.\n");
+				DBGLOG(REQ, TRACE, ("Set Sending TCP offloading.\n"));
 				/*  */
 				/* Enable sending TCP checksum */
 				/*  */
@@ -1434,10 +1532,11 @@ reqExtSetTaskOffload(IN P_GLUE_INFO_T prGlueInfo,
 				/* If the miniport doesn't support sending UDP checksum, we can't */
 				/* enable this capability */
 				/*  */
-				if (rTcpIpChecksumTask.V4Transmit.UdpChecksum == 0)
+				if (rTcpIpChecksumTask.V4Transmit.UdpChecksum == 0) {
 					return NDIS_STATUS_NOT_SUPPORTED;
+				}
 
-				DBGLOG1(REQ, TRACE, "Set Transmit UDP offloading.\n");
+				DBGLOG(REQ, TRACE, ("Set Transmit UDP offloading.\n"));
 				/*  */
 				/* Enable sending UDP checksum */
 				/*  */
@@ -1449,9 +1548,10 @@ reqExtSetTaskOffload(IN P_GLUE_INFO_T prGlueInfo,
 				/* IF the miniport doesn't support receiving UDP checksum, we can't */
 				/* enable this capability */
 				/*  */
-				if (rTcpIpChecksumTask.V6Transmit.TcpChecksum == 0)
+				if (rTcpIpChecksumTask.V6Transmit.TcpChecksum == 0) {
 					return NDIS_STATUS_NOT_SUPPORTED;
-				DBGLOG1(REQ, TRACE, "Set IPv6 Transmit TCP offloading.\n");
+				}
+				DBGLOG(REQ, TRACE, ("Set IPv6 Transmit TCP offloading.\n"));
 				/*  */
 				/* Enable receiving UDP checksum */
 				/*  */
@@ -1463,9 +1563,10 @@ reqExtSetTaskOffload(IN P_GLUE_INFO_T prGlueInfo,
 				/* IF the miniport doesn't support receiving UDP checksum, we can't */
 				/* enable this capability */
 				/*  */
-				if (rTcpIpChecksumTask.V6Transmit.UdpChecksum == 0)
+				if (rTcpIpChecksumTask.V6Transmit.UdpChecksum == 0) {
 					return NDIS_STATUS_NOT_SUPPORTED;
-				DBGLOG1(REQ, TRACE, "Set IPv6 Transmit UDP offloading.\n");
+				}
+				DBGLOG(REQ, TRACE, ("Set IPv6 Transmit UDP offloading.\n"));
 				/*  */
 				/* Enable receiving UDP checksum */
 				/*  */
@@ -1479,9 +1580,10 @@ reqExtSetTaskOffload(IN P_GLUE_INFO_T prGlueInfo,
 				/* If the miniport doesn't support receiving IP checksum, we can't */
 				/* enable this capability */
 				/*  */
-				if (rTcpIpChecksumTask.V4Receive.IpChecksum == 0)
+				if (rTcpIpChecksumTask.V4Receive.IpChecksum == 0) {
 					return NDIS_STATUS_NOT_SUPPORTED;
-				DBGLOG1(REQ, TRACE, "Set Recieve IP offloading.\n");
+				}
+				DBGLOG(REQ, TRACE, ("Set Recieve IP offloading.\n"));
 				/*  */
 				/* Enable recieving IP checksum */
 				/*  */
@@ -1493,9 +1595,10 @@ reqExtSetTaskOffload(IN P_GLUE_INFO_T prGlueInfo,
 				/* If the miniport doesn't support receiving TCP checksum, we can't */
 				/* enable this capability */
 				/*  */
-				if (rTcpIpChecksumTask.V4Receive.TcpChecksum == 0)
+				if (rTcpIpChecksumTask.V4Receive.TcpChecksum == 0) {
 					return NDIS_STATUS_NOT_SUPPORTED;
-				DBGLOG1(REQ, TRACE, "Set Recieve TCP offloading.\n");
+				}
+				DBGLOG(REQ, TRACE, ("Set Recieve TCP offloading.\n"));
 				/*  */
 				/* Enable recieving TCP checksum */
 				/*  */
@@ -1507,9 +1610,10 @@ reqExtSetTaskOffload(IN P_GLUE_INFO_T prGlueInfo,
 				/* IF the miniport doesn't support receiving UDP checksum, we can't */
 				/* enable this capability */
 				/*  */
-				if (rTcpIpChecksumTask.V4Receive.UdpChecksum == 0)
+				if (rTcpIpChecksumTask.V4Receive.UdpChecksum == 0) {
 					return NDIS_STATUS_NOT_SUPPORTED;
-				DBGLOG1(REQ, TRACE, "Set Recieve UDP offloading.\n");
+				}
+				DBGLOG(REQ, TRACE, ("Set Recieve UDP offloading.\n"));
 				/*  */
 				/* Enable receiving UDP checksum */
 				/*  */
@@ -1521,13 +1625,15 @@ reqExtSetTaskOffload(IN P_GLUE_INFO_T prGlueInfo,
 				/* IF the miniport doesn't support receiving UDP checksum, we can't */
 				/* enable this capability */
 				/*  */
-				if (rTcpIpChecksumTask.V6Receive.TcpChecksum == 0)
+				if (rTcpIpChecksumTask.V6Receive.TcpChecksum == 0) {
 					return NDIS_STATUS_NOT_SUPPORTED;
-				DBGLOG1(REQ, TRACE, "Set IPv6 Recieve TCP offloading.\n");
+				}
+				DBGLOG(REQ, TRACE, ("Set IPv6 Recieve TCP offloading.\n"));
 				/*  */
 				/* Enable receiving TCP checksum */
 				/*  */
-				u4FlagTcpIpChksum |= (CSUM_OFFLOAD_EN_RX_IPv6 | CSUM_OFFLOAD_EN_RX_TCP);
+				u4FlagTcpIpChksum |=
+				    (CSUM_OFFLOAD_EN_RX_IPv6 | CSUM_OFFLOAD_EN_RX_TCP);
 			}
 
 			if (pTcpIpChecksumTask->V6Receive.UdpChecksum) {
@@ -1535,13 +1641,15 @@ reqExtSetTaskOffload(IN P_GLUE_INFO_T prGlueInfo,
 				/* IF the miniport doesn't support receiving UDP checksum, we can't */
 				/* enable this capability */
 				/*  */
-				if (rTcpIpChecksumTask.V6Receive.UdpChecksum == 0)
+				if (rTcpIpChecksumTask.V6Receive.UdpChecksum == 0) {
 					return NDIS_STATUS_NOT_SUPPORTED;
-				DBGLOG1(REQ, TRACE, "Set IPv6 Recieve UDP offloading.\n");
+				}
+				DBGLOG(REQ, TRACE, ("Set IPv6 Recieve UDP offloading.\n"));
 				/*  */
 				/* Enable receiving UDP checksum */
 				/*  */
-				u4FlagTcpIpChksum |= (CSUM_OFFLOAD_EN_RX_IPv6 | CSUM_OFFLOAD_EN_RX_UDP);
+				u4FlagTcpIpChksum |=
+				    (CSUM_OFFLOAD_EN_RX_IPv6 | CSUM_OFFLOAD_EN_RX_UDP);
 			}
 			/* check for V6 setting, because this miniport doesn't support IP otions of */
 			/* checksum offload for V6, so we just return NDIS_STATUS_NOT_SUPPORTED */
@@ -1555,7 +1663,8 @@ reqExtSetTaskOffload(IN P_GLUE_INFO_T prGlueInfo,
 			/* set HW engine for checksum offload attributes */
 			wlanSetInformation(prGlueInfo->prAdapter,
 					   wlanoidSetCSUMOffload,
-					   &u4FlagTcpIpChksum, sizeof(u4FlagTcpIpChksum), &u4ExtBytesRead);
+					   &u4FlagTcpIpChksum,
+					   sizeof(u4FlagTcpIpChksum), &u4ExtBytesRead);
 
 			rStatus = NDIS_STATUS_PENDING;
 
@@ -1587,7 +1696,8 @@ reqExtSetTaskOffload(IN P_GLUE_INFO_T prGlueInfo,
 	return rStatus;
 
 }				/* end of reqExtSetTaskOffload() */
-#endif /* CFG_TCP_IP_CHKSUM_OFFLOAD */
+#endif				/* CFG_TCP_IP_CHKSUM_OFFLOAD */
+
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1609,14 +1719,16 @@ reqExtSetTaskOffload(IN P_GLUE_INFO_T prGlueInfo,
 /*----------------------------------------------------------------------------*/
 WLAN_STATUS
 reqExtSetAcpiDevicePowerState(IN P_GLUE_INFO_T prGlueInfo,
-			      IN PVOID pvSetBuffer, IN UINT_32 u4SetBufferLen, OUT PUINT_32 pu4SetInfoLen)
+			      IN PVOID pvSetBuffer,
+			      IN UINT_32 u4SetBufferLen, OUT PUINT_32 pu4SetInfoLen)
 {
 	ASSERT(prGlueInfo);
 	ASSERT(pvSetBuffer);
 	ASSERT(pu4SetInfoLen);
 
 	return wlanSetInformation(prGlueInfo->prAdapter,
-				  wlanoidSetAcpiDevicePowerState, pvSetBuffer, u4SetBufferLen, pu4SetInfoLen);
+				  wlanoidSetAcpiDevicePowerState,
+				  pvSetBuffer, u4SetBufferLen, pu4SetInfoLen);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -1634,7 +1746,8 @@ reqExtSetAcpiDevicePowerState(IN P_GLUE_INFO_T prGlueInfo,
 /*----------------------------------------------------------------------------*/
 BOOLEAN
 imageFileMapping(IN NDIS_STRING rFileName,
-		 OUT NDIS_HANDLE * pFileHandle, OUT PVOID * ppvMapFileBuf, OUT PUINT_32 pu4FileLength)
+		 OUT NDIS_HANDLE * pFileHandle,
+		 OUT PVOID * ppvMapFileBuf, OUT PUINT_32 pu4FileLength)
 {
 	NDIS_STATUS rStatus = NDIS_STATUS_FAILURE;
 	NDIS_PHYSICAL_ADDRESS high = NDIS_PHYSICAL_ADDRESS_CONST(-1, -1);
@@ -1643,14 +1756,14 @@ imageFileMapping(IN NDIS_STRING rFileName,
 	NdisOpenFile(&rStatus, pFileHandle, &FileLength, &rFileName, high);
 
 	if (rStatus != NDIS_STATUS_SUCCESS) {
-		DBGLOG1(REQ, WARN, "Use builded image\n");
+		DBGLOG(REQ, WARN, ("Use builded image\n"));
 		return FALSE;
 	} else {
 		rStatus = NDIS_STATUS_FAILURE;
 		NdisMapFile(&rStatus, ppvMapFileBuf, *pFileHandle);
 		if (rStatus != NDIS_STATUS_SUCCESS) {
 			NdisCloseFile(*pFileHandle);
-			DBGLOG1(REQ, INFO, "map file fail!!\n");
+			DBGLOG(REQ, INFO, ("map file fail!!\n"));
 			return FALSE;
 		}
 	}
@@ -1675,9 +1788,10 @@ imageFileMapping(IN NDIS_STRING rFileName,
 BOOLEAN imageFileUnMapping(IN NDIS_HANDLE rFileHandle, OUT PVOID pvMapFileBuf)
 {
 	if (rFileHandle) {
-		if (pvMapFileBuf)
+		if (pvMapFileBuf) {
 			NdisUnmapFile(rFileHandle);
-		DBGLOG1(REQ, INFO, "closed open file\n");
+		}
+		DBGLOG(REQ, INFO, ("closed open file\n"));
 		NdisCloseFile(rFileHandle);
 	}
 	return TRUE;

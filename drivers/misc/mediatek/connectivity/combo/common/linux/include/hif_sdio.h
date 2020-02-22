@@ -116,7 +116,7 @@ typedef struct _MTK_WCN_HIF_SDIO_PROBEINFO {
 	MTK_WCN_BOOL on_by_wmt;	/* TRUE: on by wmt, FALSE: not on by wmt */
 	/* added for sdio irq sync and mmc single_irq workaround */
 	MTK_WCN_BOOL sdio_irq_enabled;	/* TRUE: can handle sdio irq; FALSE: no sdio irq handling */
-	INT32 clt_idx;		/* registered function table info element number (initial value is -1) */
+	INT8 clt_idx;		/* registered function table info element number (initial value is -1) */
 } MTK_WCN_HIF_SDIO_PROBEINFO;
 
 /* work queue info needed by worker */

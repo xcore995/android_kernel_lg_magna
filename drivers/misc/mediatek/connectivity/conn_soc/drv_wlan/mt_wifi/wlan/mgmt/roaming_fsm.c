@@ -1,5 +1,5 @@
 /*
-** Id:
+** $Id:
 */
 
 /*! \file   "roaming_fsm.c"
@@ -8,8 +8,10 @@
     This file defines the FSM for Roaming MODULE.
 */
 
+
+
 /*
-** Log: roaming_fsm.c
+** $Log: roaming_fsm.c $
  *
  * 11 24 2011 wh.su
  * [WCXRP00001078] [MT6620 Wi-Fi][Driver] Adding the mediatek log improment support : XLOG
@@ -92,12 +94,11 @@
 #if DBG
 /*lint -save -e64 Type mismatch */
 static PUINT_8 apucDebugRoamingState[ROAMING_STATE_NUM] = {
-	(PUINT_8) DISP_STRING("ROAMING_STATE_IDLE"),
-	(PUINT_8) DISP_STRING("ROAMING_STATE_DECISION"),
-	(PUINT_8) DISP_STRING("ROAMING_STATE_DISCOVERY"),
-	(PUINT_8) DISP_STRING("ROAMING_STATE_ROAM")
+    (PUINT_8)DISP_STRING("ROAMING_STATE_IDLE"),
+    (PUINT_8)DISP_STRING("ROAMING_STATE_DECISION"),
+    (PUINT_8)DISP_STRING("ROAMING_STATE_DISCOVERY"),
+    (PUINT_8)DISP_STRING("ROAMING_STATE_ROAM")
 };
-
 /*lint -restore */
 #endif /* DBG */
 
@@ -107,10 +108,9 @@ static PUINT_8 apucDebugRoamingState[ROAMING_STATE_NUM] = {
 */
 
 #define ROAMING_ENABLE_CHECK(_roam) \
-{ \
-	if (!(_roam->fgIsEnableRoaming)) \
-		return; \
-}
+        { \
+            if (!(_roam->fgIsEnableRoaming)) {return;} \
+        }
 
 /*******************************************************************************
 *                   F U N C T I O N   D E C L A R A T I O N S
@@ -131,23 +131,27 @@ static PUINT_8 apucDebugRoamingState[ROAMING_STATE_NUM] = {
 * @return (none)
 */
 /*----------------------------------------------------------------------------*/
-VOID roamingFsmInit(IN P_ADAPTER_T prAdapter)
+VOID
+roamingFsmInit (
+    IN P_ADAPTER_T prAdapter
+    )
 {
-	P_ROAMING_INFO_T prRoamingFsmInfo;
-	P_CONNECTION_SETTINGS_T prConnSettings;
+    P_ROAMING_INFO_T prRoamingFsmInfo;
+    P_CONNECTION_SETTINGS_T prConnSettings;
 
-	DBGLOG(ROAMING, LOUD, "->roamingFsmInit(): Current Time = %u\n", kalGetTimeTick());
+    DBGLOG(ROAMING, LOUD, ("->roamingFsmInit(): Current Time = %u\n",
+		kalGetTimeTick()));
 
-	prRoamingFsmInfo = (P_ROAMING_INFO_T) &(prAdapter->rWifiVar.rRoamingInfo);
-	prConnSettings = &(prAdapter->rWifiVar.rConnSettings);
+    prRoamingFsmInfo = (P_ROAMING_INFO_T)&(prAdapter->rWifiVar.rRoamingInfo);
+    prConnSettings = &(prAdapter->rWifiVar.rConnSettings);
 
-	/* 4 <1> Initiate FSM */
-	prRoamingFsmInfo->fgIsEnableRoaming = prConnSettings->fgIsEnableRoaming;
-	prRoamingFsmInfo->eCurrentState = ROAMING_STATE_IDLE;
-	prRoamingFsmInfo->rRoamingDiscoveryUpdateTime = 0;
+    //4 <1> Initiate FSM
+    prRoamingFsmInfo->fgIsEnableRoaming = prConnSettings->fgIsEnableRoaming;
+    prRoamingFsmInfo->eCurrentState = ROAMING_STATE_IDLE;
+    prRoamingFsmInfo->rRoamingDiscoveryUpdateTime = 0;
 
-	return;
-}				/* end of roamingFsmInit() */
+    return;
+} /* end of roamingFsmInit() */
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -158,18 +162,22 @@ VOID roamingFsmInit(IN P_ADAPTER_T prAdapter)
 * @return (none)
 */
 /*----------------------------------------------------------------------------*/
-VOID roamingFsmUninit(IN P_ADAPTER_T prAdapter)
+VOID
+roamingFsmUninit (
+    IN P_ADAPTER_T prAdapter
+    )
 {
-	P_ROAMING_INFO_T prRoamingFsmInfo;
+    P_ROAMING_INFO_T prRoamingFsmInfo;
 
-	DBGLOG(ROAMING, LOUD, "->roamingFsmUninit(): Current Time = %u\n", kalGetTimeTick());
+    DBGLOG(ROAMING, LOUD, ("->roamingFsmUninit(): Current Time = %u\n",
+		kalGetTimeTick()));
 
-	prRoamingFsmInfo = (P_ROAMING_INFO_T) &(prAdapter->rWifiVar.rRoamingInfo);
+    prRoamingFsmInfo = (P_ROAMING_INFO_T)&(prAdapter->rWifiVar.rRoamingInfo);
 
-	prRoamingFsmInfo->eCurrentState = ROAMING_STATE_IDLE;
+    prRoamingFsmInfo->eCurrentState = ROAMING_STATE_IDLE;
 
-	return;
-}				/* end of roamingFsmUninit() */
+    return;
+} /* end of roamingFsmUninit() */
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -181,32 +189,38 @@ VOID roamingFsmUninit(IN P_ADAPTER_T prAdapter)
 * @return (none)
 */
 /*----------------------------------------------------------------------------*/
-VOID roamingFsmSendCmd(IN P_ADAPTER_T prAdapter, IN P_ROAMING_PARAM_T prParam)
+VOID
+roamingFsmSendCmd (
+    IN P_ADAPTER_T prAdapter,
+    IN P_ROAMING_PARAM_T prParam
+    )
 {
-	P_ROAMING_INFO_T prRoamingFsmInfo;
-	WLAN_STATUS rStatus;
+    P_ROAMING_INFO_T prRoamingFsmInfo;
+    WLAN_STATUS rStatus;
 
-	DBGLOG(ROAMING, LOUD, "->roamingFsmSendCmd(): Current Time = %u\n", kalGetTimeTick());
+    DBGLOG(ROAMING, LOUD, ("->roamingFsmSendCmd(): Current Time = %u\n",
+		kalGetTimeTick()));
 
-	prRoamingFsmInfo = (P_ROAMING_INFO_T) &(prAdapter->rWifiVar.rRoamingInfo);
+    prRoamingFsmInfo = (P_ROAMING_INFO_T)&(prAdapter->rWifiVar.rRoamingInfo);
 
-	rStatus = wlanSendSetQueryCmd(prAdapter,	/* prAdapter */
-				      CMD_ID_ROAMING_TRANSIT,	/* ucCID */
-				      TRUE,	/* fgSetQuery */
-				      FALSE,	/* fgNeedResp */
-				      FALSE,	/* fgIsOid */
-				      NULL,	/* pfCmdDoneHandler */
-				      NULL,	/* pfCmdTimeoutHandler */
-				      sizeof(ROAMING_PARAM_T),	/* u4SetQueryInfoLen */
-				      (PUINT_8) prParam,	/* pucInfoBuffer */
-				      NULL,	/* pvSetQueryBuffer */
-				      0	/* u4SetQueryBufferLen */
-	    );
+    rStatus = wlanSendSetQueryCmd (
+                prAdapter,                  /* prAdapter */
+                CMD_ID_ROAMING_TRANSIT,     /* ucCID */
+                TRUE,                       /* fgSetQuery */
+                FALSE,                      /* fgNeedResp */
+                FALSE,                      /* fgIsOid */
+                NULL,                       /* pfCmdDoneHandler */
+                NULL,                       /* pfCmdTimeoutHandler */
+                sizeof(ROAMING_PARAM_T),    /* u4SetQueryInfoLen */
+                (PUINT_8) prParam,          /* pucInfoBuffer */
+                NULL,                       /* pvSetQueryBuffer */
+                0                           /* u4SetQueryBufferLen */
+                );
 
-	ASSERT(rStatus == WLAN_STATUS_PENDING);
+    ASSERT(rStatus == WLAN_STATUS_PENDING);
 
-	return;
-}				/* end of roamingFsmSendCmd() */
+    return;
+} /* end of roamingFsmSendCmd() */
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -217,21 +231,25 @@ VOID roamingFsmSendCmd(IN P_ADAPTER_T prAdapter, IN P_ROAMING_PARAM_T prParam)
 * @return none
 */
 /*----------------------------------------------------------------------------*/
-VOID roamingFsmScanResultsUpdate(IN P_ADAPTER_T prAdapter)
+VOID
+roamingFsmScanResultsUpdate (
+    IN P_ADAPTER_T prAdapter
+    )
 {
-	P_ROAMING_INFO_T prRoamingFsmInfo;
+    P_ROAMING_INFO_T prRoamingFsmInfo;
 
-	prRoamingFsmInfo = (P_ROAMING_INFO_T) &(prAdapter->rWifiVar.rRoamingInfo);
+    prRoamingFsmInfo = (P_ROAMING_INFO_T)&(prAdapter->rWifiVar.rRoamingInfo);
 
-	/* Check Roaming Conditions */
-	ROAMING_ENABLE_CHECK(prRoamingFsmInfo);
+    /* Check Roaming Conditions */
+    ROAMING_ENABLE_CHECK(prRoamingFsmInfo);
 
-	DBGLOG(ROAMING, LOUD, "->roamingFsmScanResultsUpdate(): Current Time = %u", kalGetTimeTick());
+    DBGLOG(ROAMING, LOUD, ("->roamingFsmScanResultsUpdate(): Current Time = %u",
+		kalGetTimeTick()));
 
-	GET_CURRENT_SYSTIME(&prRoamingFsmInfo->rRoamingDiscoveryUpdateTime);
+    GET_CURRENT_SYSTIME(&prRoamingFsmInfo->rRoamingDiscoveryUpdateTime);
 
-	return;
-}				/* end of roamingFsmScanResultsUpdate() */
+    return;
+} /* end of roamingFsmScanResultsUpdate() */
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -243,73 +261,81 @@ VOID roamingFsmScanResultsUpdate(IN P_ADAPTER_T prAdapter)
 * @return (none)
 */
 /*----------------------------------------------------------------------------*/
-VOID roamingFsmSteps(IN P_ADAPTER_T prAdapter, IN ENUM_ROAMING_STATE_T eNextState)
+VOID
+roamingFsmSteps (
+    IN P_ADAPTER_T prAdapter,
+    IN ENUM_ROAMING_STATE_T eNextState
+    )
 {
-	P_ROAMING_INFO_T prRoamingFsmInfo;
-	ENUM_ROAMING_STATE_T ePreviousState;
-	BOOLEAN fgIsTransition = (BOOLEAN) FALSE;
+    P_ROAMING_INFO_T prRoamingFsmInfo;
+    ENUM_ROAMING_STATE_T ePreviousState;
+    BOOLEAN fgIsTransition = (BOOLEAN)FALSE;
 
-	prRoamingFsmInfo = (P_ROAMING_INFO_T) &(prAdapter->rWifiVar.rRoamingInfo);
+    prRoamingFsmInfo = (P_ROAMING_INFO_T)&(prAdapter->rWifiVar.rRoamingInfo);
 
-	do {
+    do {
 
-		/* Do entering Next State */
+        /* Do entering Next State */
 #if DBG
-		DBGLOG(ROAMING, STATE, "TRANSITION: [%s] -> [%s]\n",
-					apucDebugRoamingState[prRoamingFsmInfo->eCurrentState],
-					apucDebugRoamingState[eNextState]);
+        DBGLOG(ROAMING, STATE, ("TRANSITION: [%s] -> [%s]\n",
+                            apucDebugRoamingState[prRoamingFsmInfo->eCurrentState],
+                            apucDebugRoamingState[eNextState]));
 #else
-		DBGLOG(ROAMING, STATE, "[%d] TRANSITION: [%d] -> [%d]\n",
-					DBG_ROAMING_IDX, prRoamingFsmInfo->eCurrentState, eNextState);
+        DBGLOG(ROAMING, STATE, ("[%d] TRANSITION: [%d] -> [%d]\n",
+                            DBG_ROAMING_IDX,
+                            prRoamingFsmInfo->eCurrentState,
+                            eNextState));
 #endif
-		/* NOTE(Kevin): This is the only place to change the eCurrentState(except initial) */
-		ePreviousState = prRoamingFsmInfo->eCurrentState;
-		prRoamingFsmInfo->eCurrentState = eNextState;
+        /* NOTE(Kevin): This is the only place to change the eCurrentState(except initial) */
+        ePreviousState = prRoamingFsmInfo->eCurrentState;
+        prRoamingFsmInfo->eCurrentState = eNextState;
 
-		fgIsTransition = (BOOLEAN) FALSE;
+        fgIsTransition = (BOOLEAN)FALSE;
 
-		/* Do tasks of the State that we just entered */
-		switch (prRoamingFsmInfo->eCurrentState) {
-			/* NOTE(Kevin): we don't have to rearrange the sequence of following
-			 * switch case. Instead I would like to use a common lookup table of array
-			 * of function pointer to speed up state search.
-			 */
-		case ROAMING_STATE_IDLE:
-		case ROAMING_STATE_DECISION:
-			break;
+        /* Do tasks of the State that we just entered */
+        switch (prRoamingFsmInfo->eCurrentState) {
+        /* NOTE(Kevin): we don't have to rearrange the sequence of following
+         * switch case. Instead I would like to use a common lookup table of array
+         * of function pointer to speed up state search.
+         */
+        case ROAMING_STATE_IDLE:
+        case ROAMING_STATE_DECISION:
+        	  break;
 
-		case ROAMING_STATE_DISCOVERY:
-			{
-				OS_SYSTIME rCurrentTime;
+        case ROAMING_STATE_DISCOVERY:
+        	  {
+        	      OS_SYSTIME rCurrentTime;
 
-				GET_CURRENT_SYSTIME(&rCurrentTime);
-				if (CHECK_FOR_TIMEOUT(rCurrentTime, prRoamingFsmInfo->rRoamingDiscoveryUpdateTime,
-						      SEC_TO_SYSTIME(ROAMING_DISCOVERY_TIMEOUT_SEC))) {
-					DBGLOG(ROAMING, LOUD, "roamingFsmSteps: DiscoveryUpdateTime Timeout");
-					aisFsmRunEventRoamingDiscovery(prAdapter, TRUE);
-				} else {
-					DBGLOG(ROAMING, LOUD, "roamingFsmSteps: DiscoveryUpdateTime Updated");
+        	      GET_CURRENT_SYSTIME(&rCurrentTime);
+                if (CHECK_FOR_TIMEOUT(rCurrentTime, prRoamingFsmInfo->rRoamingDiscoveryUpdateTime,
+                                      SEC_TO_SYSTIME(ROAMING_DISCOVERY_TIMEOUT_SEC))) {
+                    DBGLOG(ROAMING, LOUD, ("roamingFsmSteps: DiscoveryUpdateTime Timeout"));
+                    aisFsmRunEventRoamingDiscovery(prAdapter, TRUE);
+                }
+                else {
+                	  DBGLOG(ROAMING, LOUD, ("roamingFsmSteps: DiscoveryUpdateTime Updated"));
 #if CFG_SUPPORT_ROAMING_ENC
 					if (prAdapter->fgIsRoamingEncEnabled == TRUE)
 						aisFsmRunEventRoamingDiscovery(prAdapter, TRUE);
 					else
 #endif /* CFG_SUPPORT_ROAMING_ENC */
-						aisFsmRunEventRoamingDiscovery(prAdapter, FALSE);
-				}
-			}
-			break;
+                	  aisFsmRunEventRoamingDiscovery(prAdapter, FALSE);
+                }
+            }
+        	  break;
 
-		case ROAMING_STATE_ROAM:
-			break;
+        case ROAMING_STATE_ROAM:
+        	  break;
 
-		default:
-			ASSERT(0);	/* Make sure we have handle all STATEs */
-		}
-	} while (fgIsTransition);
+        default:
+            ASSERT(0); /* Make sure we have handle all STATEs */
+        }
+    }
+    while (fgIsTransition);
 
-	return;
+    return;
 
-}				/* end of roamingFsmSteps() */
+} /* end of roamingFsmSteps() */
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -320,41 +346,47 @@ VOID roamingFsmSteps(IN P_ADAPTER_T prAdapter, IN ENUM_ROAMING_STATE_T eNextStat
 * @return none
 */
 /*----------------------------------------------------------------------------*/
-VOID roamingFsmRunEventStart(IN P_ADAPTER_T prAdapter)
+VOID
+roamingFsmRunEventStart (
+    IN P_ADAPTER_T prAdapter
+    )
 {
-	P_ROAMING_INFO_T prRoamingFsmInfo;
-	ENUM_ROAMING_STATE_T eNextState;
-	P_BSS_INFO_T prAisBssInfo;
-	ROAMING_PARAM_T rParam;
+    P_ROAMING_INFO_T prRoamingFsmInfo;
+    ENUM_ROAMING_STATE_T eNextState;
+    P_BSS_INFO_T prAisBssInfo;
+    ROAMING_PARAM_T rParam;
 
-	prRoamingFsmInfo = (P_ROAMING_INFO_T) &(prAdapter->rWifiVar.rRoamingInfo);
+    prRoamingFsmInfo = (P_ROAMING_INFO_T)&(prAdapter->rWifiVar.rRoamingInfo);
 
-	/* Check Roaming Conditions */
-	ROAMING_ENABLE_CHECK(prRoamingFsmInfo);
+    /* Check Roaming Conditions */
+    ROAMING_ENABLE_CHECK(prRoamingFsmInfo);
 
-	prAisBssInfo = &(prAdapter->rWifiVar.arBssInfo[NETWORK_TYPE_AIS_INDEX]);
-	if (prAisBssInfo->eCurrentOPMode != OP_MODE_INFRASTRUCTURE)
-		return;
+    prAisBssInfo = &(prAdapter->rWifiVar.arBssInfo[NETWORK_TYPE_AIS_INDEX]);
+    if (prAisBssInfo->eCurrentOPMode != OP_MODE_INFRASTRUCTURE) {
+        return;
+    }
 
-	DBGLOG(ROAMING, EVENT, "EVENT-ROAMING START: Current Time = %u\n", kalGetTimeTick());
+    DBGLOG(ROAMING, EVENT, ("EVENT-ROAMING START: Current Time = %u\n",
+		kalGetTimeTick()));
 
-	/* IDLE, ROAM -> DECISION */
-	/* Errors as DECISION, DISCOVERY -> DECISION */
-	if (!(prRoamingFsmInfo->eCurrentState == ROAMING_STATE_IDLE ||
-		prRoamingFsmInfo->eCurrentState == ROAMING_STATE_ROAM))
-		return;
+    /* IDLE, ROAM -> DECISION */
+    /* Errors as DECISION, DISCOVERY -> DECISION */
+    if (!(prRoamingFsmInfo->eCurrentState == ROAMING_STATE_IDLE
+    	  || prRoamingFsmInfo->eCurrentState == ROAMING_STATE_ROAM)) {
+        return;
+    }
 
-	eNextState = ROAMING_STATE_DECISION;
-	if (eNextState != prRoamingFsmInfo->eCurrentState) {
-		rParam.u2Event = ROAMING_EVENT_START;
-		roamingFsmSendCmd(prAdapter, (P_ROAMING_PARAM_T) & rParam);
+    eNextState = ROAMING_STATE_DECISION;
+    if (eNextState != prRoamingFsmInfo->eCurrentState) {
+    	  rParam.u2Event = ROAMING_EVENT_START;
+    	  roamingFsmSendCmd(prAdapter, (P_ROAMING_PARAM_T) &rParam);
 
-		/* Step to next state */
-		roamingFsmSteps(prAdapter, eNextState);
-	}
+    	  /* Step to next state */
+        roamingFsmSteps(prAdapter, eNextState);
+    }
 
-	return;
-}				/* end of roamingFsmRunEventStart() */
+    return;
+} /* end of roamingFsmRunEventStart() */
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -365,44 +397,51 @@ VOID roamingFsmRunEventStart(IN P_ADAPTER_T prAdapter)
 * @return none
 */
 /*----------------------------------------------------------------------------*/
-VOID roamingFsmRunEventDiscovery(IN P_ADAPTER_T prAdapter, IN P_ROAMING_PARAM_T prParam)
+VOID
+roamingFsmRunEventDiscovery (
+    IN P_ADAPTER_T prAdapter,
+    IN UINT_32 u4Param
+    )
 {
-	P_ROAMING_INFO_T prRoamingFsmInfo;
-	ENUM_ROAMING_STATE_T eNextState;
+    P_ROAMING_INFO_T prRoamingFsmInfo;
+    ENUM_ROAMING_STATE_T eNextState;
 
-	prRoamingFsmInfo = (P_ROAMING_INFO_T) &(prAdapter->rWifiVar.rRoamingInfo);
+    prRoamingFsmInfo = (P_ROAMING_INFO_T)&(prAdapter->rWifiVar.rRoamingInfo);
 
-	/* Check Roaming Conditions */
-	ROAMING_ENABLE_CHECK(prRoamingFsmInfo);
+    /* Check Roaming Conditions */
+    ROAMING_ENABLE_CHECK(prRoamingFsmInfo);
 
-	DBGLOG(ROAMING, EVENT, "EVENT-ROAMING DISCOVERY: Current Time = %u Reason = %u\n",
-		kalGetTimeTick(), prParam->u2Reason);
+    DBGLOG(ROAMING, EVENT, ("EVENT-ROAMING DISCOVERY: Current Time = %u\n",
+		kalGetTimeTick()));
 
-	/* DECISION -> DISCOVERY */
-	/* Errors as IDLE, DISCOVERY, ROAM -> DISCOVERY */
-	if (prRoamingFsmInfo->eCurrentState != ROAMING_STATE_DECISION)
-		return;
+    /* DECISION -> DISCOVERY */
+    /* Errors as IDLE, DISCOVERY, ROAM -> DISCOVERY */
+    if (prRoamingFsmInfo->eCurrentState != ROAMING_STATE_DECISION) {
+        return;
+    }
+
 #if CFG_SUPPORT_ROAMING_ENC
 	prRoamingFsmInfo->RoamingEntryTimeoutSkipCount = 0;
 #endif
 
-	eNextState = ROAMING_STATE_DISCOVERY;
-	/* DECISION -> DISCOVERY */
-	if (eNextState != prRoamingFsmInfo->eCurrentState) {
-		P_BSS_INFO_T prAisBssInfo;
-		P_BSS_DESC_T prBssDesc;
+    eNextState = ROAMING_STATE_DISCOVERY;
+    /* DECISION -> DISCOVERY */
+    if (eNextState != prRoamingFsmInfo->eCurrentState) {
+        P_BSS_INFO_T prAisBssInfo;
+        P_BSS_DESC_T prBssDesc;
 
-		/* sync. rcpi with firmware */
-		prAisBssInfo = &(prAdapter->rWifiVar.arBssInfo[NETWORK_TYPE_AIS_INDEX]);
-		prBssDesc = scanSearchBssDescByBssid(prAdapter, prAisBssInfo->aucBSSID);
-		if (prBssDesc)
-			prBssDesc->ucRCPI = (UINT_8) (prParam->u2Data & 0xff);
+        // sync. rcpi with firmware
+        prAisBssInfo = &(prAdapter->rWifiVar.arBssInfo[NETWORK_TYPE_AIS_INDEX]);
+        prBssDesc = scanSearchBssDescByBssid(prAdapter, prAisBssInfo->aucBSSID);
+        if (prBssDesc) {
+        	  prBssDesc->ucRCPI = (UINT_8)(u4Param&0xff);
+        }
 
-		roamingFsmSteps(prAdapter, eNextState);
-	}
+        roamingFsmSteps(prAdapter, eNextState);
+    }
 
-	return;
-}				/* end of roamingFsmRunEventDiscovery() */
+    return;
+} /* end of roamingFsmRunEventDiscovery() */
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -413,36 +452,41 @@ VOID roamingFsmRunEventDiscovery(IN P_ADAPTER_T prAdapter, IN P_ROAMING_PARAM_T 
 * @return none
 */
 /*----------------------------------------------------------------------------*/
-VOID roamingFsmRunEventRoam(IN P_ADAPTER_T prAdapter)
+VOID
+roamingFsmRunEventRoam (
+    IN P_ADAPTER_T prAdapter
+    )
 {
-	P_ROAMING_INFO_T prRoamingFsmInfo;
-	ENUM_ROAMING_STATE_T eNextState;
-	ROAMING_PARAM_T rParam;
+    P_ROAMING_INFO_T prRoamingFsmInfo;
+    ENUM_ROAMING_STATE_T eNextState;
+    ROAMING_PARAM_T rParam;
 
-	prRoamingFsmInfo = (P_ROAMING_INFO_T) &(prAdapter->rWifiVar.rRoamingInfo);
+    prRoamingFsmInfo = (P_ROAMING_INFO_T)&(prAdapter->rWifiVar.rRoamingInfo);
 
-	/* Check Roaming Conditions */
-	ROAMING_ENABLE_CHECK(prRoamingFsmInfo);
+    /* Check Roaming Conditions */
+    ROAMING_ENABLE_CHECK(prRoamingFsmInfo);
 
-	DBGLOG(ROAMING, EVENT, "EVENT-ROAMING ROAM: Current Time = %u\n", kalGetTimeTick());
+    DBGLOG(ROAMING, EVENT, ("EVENT-ROAMING ROAM: Current Time = %u\n",
+		kalGetTimeTick()));
 
-	/* IDLE, ROAM -> DECISION */
-	/* Errors as IDLE, DECISION, ROAM -> ROAM */
-	if (prRoamingFsmInfo->eCurrentState != ROAMING_STATE_DISCOVERY)
-		return;
+    /* IDLE, ROAM -> DECISION */
+    /* Errors as IDLE, DECISION, ROAM -> ROAM */
+    if (prRoamingFsmInfo->eCurrentState != ROAMING_STATE_DISCOVERY) {
+        return;
+    }
 
-	eNextState = ROAMING_STATE_ROAM;
-	/* DISCOVERY -> ROAM */
-	if (eNextState != prRoamingFsmInfo->eCurrentState) {
-		rParam.u2Event = ROAMING_EVENT_ROAM;
-		roamingFsmSendCmd(prAdapter, (P_ROAMING_PARAM_T) & rParam);
+    eNextState = ROAMING_STATE_ROAM;
+    /* DISCOVERY -> ROAM */
+    if (eNextState != prRoamingFsmInfo->eCurrentState) {
+    	  rParam.u2Event = ROAMING_EVENT_ROAM;
+    	  roamingFsmSendCmd(prAdapter, (P_ROAMING_PARAM_T) &rParam);
 
-		/* Step to next state */
-		roamingFsmSteps(prAdapter, eNextState);
-	}
+    	  /* Step to next state */
+        roamingFsmSteps(prAdapter, eNextState);
+    }
 
-	return;
-}				/* end of roamingFsmRunEventRoam() */
+    return;
+} /* end of roamingFsmRunEventRoam() */
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -453,37 +497,43 @@ VOID roamingFsmRunEventRoam(IN P_ADAPTER_T prAdapter)
 * @return none
 */
 /*----------------------------------------------------------------------------*/
-VOID roamingFsmRunEventFail(IN P_ADAPTER_T prAdapter, IN UINT_32 u4Param)
+VOID
+roamingFsmRunEventFail (
+    IN P_ADAPTER_T prAdapter,
+    IN UINT_32 u4Param
+    )
 {
-	P_ROAMING_INFO_T prRoamingFsmInfo;
-	ENUM_ROAMING_STATE_T eNextState;
-	ROAMING_PARAM_T rParam;
+    P_ROAMING_INFO_T prRoamingFsmInfo;
+    ENUM_ROAMING_STATE_T eNextState;
+    ROAMING_PARAM_T rParam;
 
-	prRoamingFsmInfo = (P_ROAMING_INFO_T) &(prAdapter->rWifiVar.rRoamingInfo);
+    prRoamingFsmInfo = (P_ROAMING_INFO_T)&(prAdapter->rWifiVar.rRoamingInfo);
 
-	/* Check Roaming Conditions */
-	ROAMING_ENABLE_CHECK(prRoamingFsmInfo);
+    /* Check Roaming Conditions */
+    ROAMING_ENABLE_CHECK(prRoamingFsmInfo);
 
-	DBGLOG(ROAMING, EVENT, "EVENT-ROAMING FAIL: reason %x Current Time = %u\n", u4Param, kalGetTimeTick());
+    DBGLOG(ROAMING, EVENT, ("EVENT-ROAMING FAIL: reason %x Current Time = %u\n",
+		u4Param, kalGetTimeTick()));
 
-	/* IDLE, ROAM -> DECISION */
-	/* Errors as IDLE, DECISION, DISCOVERY -> DECISION */
-	if (prRoamingFsmInfo->eCurrentState != ROAMING_STATE_ROAM)
-		return;
+    /* IDLE, ROAM -> DECISION */
+    /* Errors as IDLE, DECISION, DISCOVERY -> DECISION */
+    if (prRoamingFsmInfo->eCurrentState != ROAMING_STATE_ROAM) {
+        return;
+    }
 
-	eNextState = ROAMING_STATE_DECISION;
-	/* ROAM -> DECISION */
-	if (eNextState != prRoamingFsmInfo->eCurrentState) {
-		rParam.u2Event = ROAMING_EVENT_FAIL;
-		rParam.u2Data = (UINT_16) (u4Param & 0xffff);
-		roamingFsmSendCmd(prAdapter, (P_ROAMING_PARAM_T) & rParam);
+    eNextState = ROAMING_STATE_DECISION;
+    /* ROAM -> DECISION */
+    if (eNextState != prRoamingFsmInfo->eCurrentState) {
+    	  rParam.u2Event = ROAMING_EVENT_FAIL;
+    	  rParam.u2Data = (UINT_16)(u4Param&0xffff);
+    	  roamingFsmSendCmd(prAdapter, (P_ROAMING_PARAM_T) &rParam);
 
-		/* Step to next state */
-		roamingFsmSteps(prAdapter, eNextState);
-	}
+    	  /* Step to next state */
+        roamingFsmSteps(prAdapter, eNextState);
+    }
 
-	return;
-}				/* end of roamingFsmRunEventFail() */
+    return;
+} /* end of roamingFsmRunEventFail() */
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -494,30 +544,34 @@ VOID roamingFsmRunEventFail(IN P_ADAPTER_T prAdapter, IN UINT_32 u4Param)
 * @return none
 */
 /*----------------------------------------------------------------------------*/
-VOID roamingFsmRunEventAbort(IN P_ADAPTER_T prAdapter)
+VOID
+roamingFsmRunEventAbort (
+    IN P_ADAPTER_T prAdapter
+    )
 {
-	P_ROAMING_INFO_T prRoamingFsmInfo;
-	ENUM_ROAMING_STATE_T eNextState;
-	ROAMING_PARAM_T rParam;
+    P_ROAMING_INFO_T prRoamingFsmInfo;
+    ENUM_ROAMING_STATE_T eNextState;
+    ROAMING_PARAM_T rParam;
 
-	prRoamingFsmInfo = (P_ROAMING_INFO_T) &(prAdapter->rWifiVar.rRoamingInfo);
+    prRoamingFsmInfo = (P_ROAMING_INFO_T)&(prAdapter->rWifiVar.rRoamingInfo);
 
-	ROAMING_ENABLE_CHECK(prRoamingFsmInfo);
+    ROAMING_ENABLE_CHECK(prRoamingFsmInfo);
 
-	DBGLOG(ROAMING, EVENT, "EVENT-ROAMING ABORT: Current Time = %u\n", kalGetTimeTick());
+    DBGLOG(ROAMING, EVENT, ("EVENT-ROAMING ABORT: Current Time = %u\n",
+		kalGetTimeTick()));
 
-	eNextState = ROAMING_STATE_IDLE;
-	/* IDLE, DECISION, DISCOVERY, ROAM -> IDLE */
-	if (eNextState != prRoamingFsmInfo->eCurrentState) {
-		rParam.u2Event = ROAMING_EVENT_ABORT;
-		roamingFsmSendCmd(prAdapter, (P_ROAMING_PARAM_T) & rParam);
+    eNextState = ROAMING_STATE_IDLE;
+    /* IDLE, DECISION, DISCOVERY, ROAM -> IDLE */
+    if (eNextState != prRoamingFsmInfo->eCurrentState) {
+    	  rParam.u2Event = ROAMING_EVENT_ABORT;
+    	  roamingFsmSendCmd(prAdapter, (P_ROAMING_PARAM_T) &rParam);
 
-		/* Step to next state */
-		roamingFsmSteps(prAdapter, eNextState);
-	}
+        /* Step to next state */
+        roamingFsmSteps(prAdapter, eNextState);
+    }
 
-	return;
-}				/* end of roamingFsmRunEventAbort() */
+    return;
+} /* end of roamingFsmRunEventAbort() */
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -529,14 +583,20 @@ VOID roamingFsmRunEventAbort(IN P_ADAPTER_T prAdapter)
 * @return none
 */
 /*----------------------------------------------------------------------------*/
-WLAN_STATUS roamingFsmProcessEvent(IN P_ADAPTER_T prAdapter, IN P_ROAMING_PARAM_T prParam)
+WLAN_STATUS
+roamingFsmProcessEvent (
+    IN P_ADAPTER_T prAdapter,
+    IN P_ROAMING_PARAM_T prParam
+    )
 {
-	DBGLOG(ROAMING, LOUD, "ROAMING Process Events: Current Time = %u\n", kalGetTimeTick());
+    DBGLOG(ROAMING, LOUD, ("ROAMING Process Events: Current Time = %u\n",
+		kalGetTimeTick()));
 
-	if (ROAMING_EVENT_DISCOVERY == prParam->u2Event)
-		roamingFsmRunEventDiscovery(prAdapter, prParam);
+    if (ROAMING_EVENT_DISCOVERY == prParam->u2Event) {
+        roamingFsmRunEventDiscovery(prAdapter, prParam->u2Data);
+    }
 
-	return WLAN_STATUS_SUCCESS;
+    return WLAN_STATUS_SUCCESS;
 }
 
 #endif

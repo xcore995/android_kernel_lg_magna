@@ -67,7 +67,6 @@ static const WMT_IC_PIN_STATE cmb_aif2pin_stat[] = {
 	[CMB_STUB_AIF_1] = WMT_IC_AIF_1,
 	[CMB_STUB_AIF_2] = WMT_IC_AIF_2,
 	[CMB_STUB_AIF_3] = WMT_IC_AIF_3,
-	[CMB_STUB_AIF_4] = WMT_IC_AIF_4,
 };
 
 #if CFG_WMT_PS_SUPPORT
@@ -114,16 +113,6 @@ MTK_WCN_BOOL wmt_lib_hw_state_show(VOID);
 *                              F U N C T I O N S
 ********************************************************************************
 */
-
-INT32 wmt_lib_idc_lock_aquire(VOID)
-{
-	return osal_lock_sleepable_lock(&gDevWmt.idc_lock);
-}
-
-VOID wmt_lib_idc_lock_release(VOID)
-{
-	osal_unlock_sleepable_lock(&gDevWmt.idc_lock);
-}
 
 INT32 wmt_lib_psm_lock_aquire(VOID)
 {
@@ -206,7 +195,6 @@ INT32 wmt_lib_init(VOID)
 	/* Initialize WMTd Thread Information: Thread */
 	osal_event_init(&pDevWmt->rWmtdWq);
 	osal_sleepable_lock_init(&pDevWmt->psm_lock);
-	osal_sleepable_lock_init(&pDevWmt->idc_lock);
 	osal_sleepable_lock_init(&pDevWmt->rActiveOpQ.sLock);
 	osal_sleepable_lock_init(&pDevWmt->rFreeOpQ.sLock);
 	pDevWmt->state.data = 0;
@@ -344,7 +332,6 @@ INT32 wmt_lib_deinit(VOID)
 
 	osal_sleepable_lock_deinit(&pDevWmt->rFreeOpQ.sLock);
 	osal_sleepable_lock_deinit(&pDevWmt->rActiveOpQ.sLock);
-	osal_sleepable_lock_deinit(&pDevWmt->idc_lock);
 	osal_sleepable_lock_deinit(&pDevWmt->psm_lock);
 	osal_event_deinit(&pDevWmt->rWmtdWq);
 
@@ -530,7 +517,7 @@ static MTK_WCN_BOOL wmt_lib_ps_action(MTKSTP_PSM_ACTION_T action)
 
 	lxop = wmt_lib_get_free_op();
 	if (!lxop) {
-		WMT_DBG_FUNC("get_free_lxop fail\n");
+		WMT_WARN_FUNC("get_free_lxop fail\n");
 		return MTK_WCN_BOOL_FALSE;
 	}
 
@@ -548,35 +535,20 @@ MTK_WCN_BOOL wmt_lib_handle_idc_msg(ipc_ilm_t *idc_infor)
 	P_OSAL_OP lxop;
 	MTK_WCN_BOOL bRet = MTK_WCN_BOOL_FALSE;
 	P_OSAL_SIGNAL pSignal;
-	INT32 ret = 0;
-	UINT16 msg_len = 0;
-	static UINT8 msg_local_buffer[1300];
-
 #if	CFG_WMT_LTE_ENABLE_MSGID_MAPPING
 	MTK_WCN_BOOL unknow_msgid = MTK_WCN_BOOL_FALSE;
 #endif
 	WMT_INFO_FUNC("idc_infor from conn_md is 0x%p\n", idc_infor);
 
-	ret = wmt_lib_idc_lock_aquire();
-	if (ret) {
-		WMT_ERR_FUNC("--->lock idc_lock failed, ret=%d\n", ret);
-		return MTK_WCN_BOOL_FALSE;
-	}
-	msg_len = idc_infor->local_para_ptr->msg_len - osal_sizeof(local_para_struct);
-	osal_memcpy(&msg_local_buffer[0], &msg_len, osal_sizeof(msg_len));
-	osal_memcpy(&msg_local_buffer[osal_sizeof(msg_len)],
-			&(idc_infor->local_para_ptr->data[0]), msg_len - 1);
-	wmt_lib_idc_lock_release();
-
 	lxop = wmt_lib_get_free_op();
 	if (!lxop) {
-		WMT_DBG_FUNC("get_free_lxop fail\n");
+		WMT_WARN_FUNC("get_free_lxop fail\n");
 		return MTK_WCN_BOOL_FALSE;
 	}
 	pSignal = &lxop->signal;
 	pSignal->timeoutValue = MAX_EACH_WMT_CMD;
 	lxop->op.opId = WMT_OPID_IDC_MSG_HANDLING;
-	lxop->op.au4OpData[0] = (size_t) msg_local_buffer;
+	lxop->op.au4OpData[0] = (SIZE_T) idc_infor;
 
 	/*msg opcode fill rule is still not clrear,need scott comment */
 	/***********************************************************/
@@ -631,7 +603,7 @@ MTK_WCN_BOOL wmt_lib_handle_idc_msg(ipc_ilm_t *idc_infor)
 	}
 #else
 	if ((idc_infor->msg_id >= IPC_EL1_MSG_ID_BEGIN) && (idc_infor->msg_id <= IPC_EL1_MSG_ID_BEGIN + IPC_EL1_MSG_ID_RANGE)){
-		lxop->op.au4OpData[1] = idc_infor->msg_id - IPC_EL1_MSG_ID_BEGIN + LTE_MSG_ID_OFFSET - 1;
+		lxop->op.au4OpData[1] = idc_infor->msg_id - IPC_EL1_MSG_ID_BEGIN + LTE_MSG_ID_OFFSET;
 
 		/*wake up chip first*/
 		if (DISABLE_PSM_MONITOR()) {
@@ -645,7 +617,7 @@ MTK_WCN_BOOL wmt_lib_handle_idc_msg(ipc_ilm_t *idc_infor)
 		if (MTK_WCN_BOOL_FALSE == bRet) {
 		    WMT_WARN_FUNC("WMT_OPID_IDC_MSG_HANDLING fail(%d)\n", bRet);
 		} else {
-		    WMT_DBG_FUNC("wmt_lib_handle_idc_msg OPID(%d) type(%d) ok\n",
+		    WMT_DBG_FUNC("OPID(%d) type(%d) ok\n",
 		    lxop->op.opId,
 		    lxop->op.au4OpData[1]);
 		}
@@ -1128,7 +1100,7 @@ INT32 wmt_lib_reg_rw(UINT32 isWrite, UINT32 offset, PUINT32 pvalue, UINT32 mask)
 	}
 	lxop = wmt_lib_get_free_lxop();
 	if (!lxop) {
-		WMT_DBG_FUNC("get_free_lxop fail\n");
+		WMT_WARN_FUNC("get_free_lxop fail\n");
 
 		return -1;
 	}
@@ -1283,7 +1255,7 @@ static INT32 wmt_lib_pin_ctrl(WMT_IC_PIN_ID id, WMT_IC_PIN_STATE stat, UINT32 fl
 
 	pOp = wmt_lib_get_free_op();
 	if (!pOp) {
-		WMT_DBG_FUNC("get_free_lxop fail\n");
+		WMT_WARN_FUNC("get_free_lxop fail\n");
 		return MTK_WCN_BOOL_FALSE;
 	}
 
@@ -1329,7 +1301,7 @@ INT32 wmt_lib_reg_rw(UINT32 isWrite, UINT32 offset, PUINT32 pvalue, UINT32 mask)
 
 	pOp = wmt_lib_get_free_op();
 	if (!pOp) {
-		WMT_DBG_FUNC("get_free_lxop fail\n");
+		WMT_WARN_FUNC("get_free_lxop fail\n");
 		return -1;
 	}
 
@@ -1381,7 +1353,7 @@ INT32 wmt_lib_efuse_rw(UINT32 isWrite, UINT32 offset, PUINT32 pvalue, UINT32 mas
 
 	pOp = wmt_lib_get_free_op();
 	if (!pOp) {
-		WMT_DBG_FUNC("get_free_lxop fail\n");
+		WMT_WARN_FUNC("get_free_lxop fail\n");
 		return -1;
 	}
 
@@ -1543,7 +1515,7 @@ INT32 wmt_lib_sdio_ctrl(UINT32 on)
 
 	pOp = wmt_lib_get_free_op();
 	if (!pOp) {
-		WMT_DBG_FUNC("get_free_lxop fail\n");
+		WMT_WARN_FUNC("get_free_lxop fail\n");
 		return MTK_WCN_BOOL_FALSE;
 	}
 
@@ -1574,7 +1546,7 @@ MTK_WCN_BOOL wmt_lib_hw_state_show(VOID)
 
 	pOp = wmt_lib_get_free_op();
 	if (!pOp) {
-		WMT_DBG_FUNC("get_free_lxop fail\n");
+		WMT_WARN_FUNC("get_free_lxop fail\n");
 		return MTK_WCN_BOOL_FALSE;
 	}
 
@@ -1616,7 +1588,7 @@ MTK_WCN_BOOL wmt_lib_hw_rst(VOID)
 	wmt_lib_hw_state_show();
 	pOp = wmt_lib_get_free_op();
 	if (!pOp) {
-		WMT_DBG_FUNC("get_free_lxop fail\n");
+		WMT_WARN_FUNC("get_free_lxop fail\n");
 		return MTK_WCN_BOOL_FALSE;
 	}
 
@@ -1657,7 +1629,7 @@ MTK_WCN_BOOL wmt_lib_sw_rst(INT32 baudRst)
 	/* <4> do sw reset in wmt-core */
 	pOp = wmt_lib_get_free_op();
 	if (!pOp) {
-		WMT_DBG_FUNC("get_free_lxop fail\n");
+		WMT_WARN_FUNC("get_free_lxop fail\n");
 		return MTK_WCN_BOOL_FALSE;
 	}
 

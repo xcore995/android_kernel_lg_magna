@@ -3,8 +3,12 @@
  *  \brief
  */
 
+
+
+
 #ifndef _P2P_RLM_H
 #define _P2P_RLM_H
+
 
 /*******************************************************************************
  *                         C O M P I L E R   F L A G S
@@ -45,6 +49,7 @@
  *                  F U N C T I O N   D E C L A R A T I O N S
  ********************************************************************************
  */
+
 
 VOID rlmBssInitForAP(P_ADAPTER_T prAdapter, P_BSS_INFO_T prBssInfo);
 

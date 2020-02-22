@@ -56,7 +56,7 @@
 
 #define CFG_WMT_COREDUMP_ENABLE 0
 
-#define CFG_WMT_MULTI_PATCH (1)
+#define CFG_WMT_MULTI_PATCH (0)
 
 #if CFG_WMT_LTE_COEX_HANDLING
 #define CFG_WMT_FILTER_MODE_SETTING (1)
@@ -104,11 +104,11 @@ static UINT8 WMT_BTP2_EVT[] = { 0x02, 0x10, 0x01, 0x00, 0x00 };
 
 #if CFG_WMT_MULTI_PATCH
 static UINT8 WMT_PATCH_ADDRESS_CMD[] =
-    { 0x01, 0x08, 0x10, 0x00, 0x01, 0x01, 0x00, 0x01, 0xD4, 0x03, 0x09, 0x02, 0x00, 0x00, 0x00,
+    { 0x01, 0x08, 0x10, 0x00, 0x01, 0x01, 0x00, 0x01, 0xD4, 0x01, 0x09, 0xF0, 0x00, 0x00, 0x00,
 0x00, 0xff, 0xff, 0xff, 0xff };
 static UINT8 WMT_PATCH_ADDRESS_EVT[] = { 0x02, 0x08, 0x04, 0x00, 0x00, 0x00, 0x00, 0x01 };
 static UINT8 WMT_PATCH_P_ADDRESS_CMD[] =
-    { 0x01, 0x08, 0x10, 0x00, 0x01, 0x01, 0x00, 0x01, 0xfc, 0x08, 0x09, 0x02, 0x00, 0x00, 0x08,
+    { 0x01, 0x08, 0x10, 0x00, 0x01, 0x01, 0x00, 0x01, 0x48, 0x03, 0x09, 0xF0, 0x00, 0x00, 0x00,
 0x00, 0xff, 0xff, 0xff, 0xff };
 static UINT8 WMT_PATCH_P_ADDRESS_EVT[] = { 0x02, 0x08, 0x04, 0x00, 0x00, 0x00, 0x00, 0x01 };
 #endif
@@ -331,11 +331,6 @@ static UINT8 WMT_COEX_LTE_FREQ_IDX_TABLE_CMD[] = {0x01,0x10,0x21,0x00,0x12,
 
 static UINT8 WMT_COEX_LTE_CHAN_UNSAFE_CMD[] = {0x01,0x10,0x02,0x00,0x13,0x00};
 
-#if CFG_WMT_LTE_ENABLE_MSGID_MAPPING
-#else
-static UINT8 WMT_COEX_IS_LTE_L_CMD[] = {0x01,0x10,0x02,0x00,0x21,0x01};
-#endif
-
 static UINT8 WMT_COEX_IS_LTE_PROJ_CMD[] = {0x01,0x10,0x02,0x00,0x15,0x01};
 
 static UINT8 WMT_COEX_SPLIT_MODE_EVT[] = {0x02,0x10,0x01,0x00,0x00};
@@ -430,7 +425,6 @@ static struct init_script merge_pcm_table[] = {
 #endif
 
 #if CFG_WMT_FILTER_MODE_SETTING
-#if CFG_WMT_LTE_ENABLE_MSGID_MAPPING
 static struct init_script set_wifi_lte_coex_table_0[] = 
 {
 	INIT_CMD(WMT_COEX_EXT_COMPONENT_CMD, WMT_COEX_SPLIT_MODE_EVT, "wifi lte ext component"),
@@ -439,17 +433,6 @@ static struct init_script set_wifi_lte_coex_table_0[] =
 	INIT_CMD(WMT_COEX_LTE_CHAN_UNSAFE_CMD, WMT_COEX_SPLIT_MODE_EVT, "wifi lte unsafe channel"),
 	INIT_CMD(WMT_COEX_IS_LTE_PROJ_CMD, WMT_COEX_SPLIT_MODE_EVT, "wifi coex is lte project"),
 };
-#else
-static struct init_script set_wifi_lte_coex_table_0[] = 
-{
-	INIT_CMD(WMT_COEX_EXT_COMPONENT_CMD, WMT_COEX_SPLIT_MODE_EVT, "wifi lte ext component"),
-	INIT_CMD(WMT_COEX_FILTER_SPEC_CMD_TEST, WMT_COEX_SPLIT_MODE_EVT, "wifi lte coex filter"),
-	INIT_CMD(WMT_COEX_LTE_FREQ_IDX_TABLE_CMD, WMT_COEX_SPLIT_MODE_EVT, "wifi lte freq id table"),
-	INIT_CMD(WMT_COEX_LTE_CHAN_UNSAFE_CMD, WMT_COEX_SPLIT_MODE_EVT, "wifi lte unsafe channel"),
-	INIT_CMD(WMT_COEX_IS_LTE_L_CMD, WMT_COEX_SPLIT_MODE_EVT, "wifi coex is L branch"),
-	INIT_CMD(WMT_COEX_IS_LTE_PROJ_CMD, WMT_COEX_SPLIT_MODE_EVT, "wifi coex is lte project"),
-};
-#endif
 #endif
 
 /* MT6630 Chip Version and Info Table */
@@ -609,8 +592,8 @@ static INT32 mt6630_sw_init(P_WMT_HIF_CONF pWmtHifConf)
 	INT32 iRet = -1;
 	UINT32 u4Res = 0;
 	UINT8 evtBuf[256];
-	unsigned long ctrlPa1;
-	unsigned long ctrlPa2;
+	UINT32 ctrlPa1;
+	UINT32 ctrlPa2;
 	UINT32 hw_ver;
 #if CFG_WMT_MULTI_PATCH
 	UINT32 patch_num = 0;
@@ -890,8 +873,7 @@ static INT32 mt6630_sw_init(P_WMT_HIF_CONF pWmtHifConf)
 	}
 	
 #if CFG_WMT_FILTER_MODE_SETTING
-	wmt_stp_wifi_lte_coex();
-	WMT_DBG_FUNC("wmt_stp_wifi_lte_coex done!\n");
+    wmt_stp_wifi_lte_coex();
 #endif		
 
 #if CFG_WMT_PS_SUPPORT
@@ -930,7 +912,6 @@ static INT32 mt6630_sw_deinit(P_WMT_HIF_CONF pWmtHifConf)
 static INT32 mt6630_aif_ctrl(WMT_IC_PIN_STATE state, UINT32 flag)
 {
 	INT32 ret = -1;
-	UINT32 val = 0;
 
 #if MT6630_BRINGUP
 	ret = 0;
@@ -970,20 +951,6 @@ static INT32 mt6630_aif_ctrl(WMT_IC_PIN_STATE state, UINT32 flag)
 
 		case WMT_IC_AIF_3:
 			ret = 0;
-			break;
-			
-		case WMT_IC_AIF_4:
-			/* BT I2S FOR SCO*/
-			WMT_DBG_FUNC("BT I2S via SCO setting\n");
-			//switch pinmux to mode3 - pcm2
-			val = 0x00333300;
-			ret += wmt_core_reg_rw_raw(1, 0x80025070, &val, 0x00FFFF00);
-			//Use PCM2
-			val = 0x00000002;
-			ret += wmt_core_reg_rw_raw(1, 0x81008008, &val, 0x00000002);
-			//Disable Merge mode
-			val = 0x00000000;
-			ret += wmt_core_reg_rw_raw(1, 0x80025300, &val, 0x00000004);
 			break;
 
 		default:
@@ -1091,10 +1058,7 @@ static MTK_WCN_BOOL mt6630_quick_sleep_flag_get(VOID)
 
 static MTK_WCN_BOOL mt6630_aee_dump_flag_get(VOID)
 {
-	if (1 == mtk_wcn_stp_coredump_flag_get())
-		return MTK_WCN_BOOL_TRUE;
-	else
-		return MTK_WCN_BOOL_FALSE;
+	return MTK_WCN_BOOL_TRUE;
 }
 
 static MTK_WCN_BOOL mt6630_trigger_stp_assert(VOID)
@@ -1130,8 +1094,8 @@ static INT32 mt6630_ver_check(VOID)
 	UINT32 fw_ver;
 	INT32 iret;
 	const WMT_IC_INFO_S *p_info;
-	unsigned long ctrlPa1;
-	unsigned long ctrlPa2;
+	UINT32 ctrlPa1;
+	UINT32 ctrlPa2;
 
 	/* 1. identify chip versions: HVR(HW_VER) and FVR(FW_VER) */
 	WMT_LOUD_FUNC("MT6630: before read hw_ver (hw version)\n");
@@ -1236,7 +1200,7 @@ static const WMT_IC_INFO_S *mt6630_find_wmt_ic_info(const UINT32 hw_ver)
 static INT32 wmt_stp_init_coex(VOID)
 {
 	INT32 iRet;
-	unsigned long addr;
+	size_t addr;
 	WMT_GEN_CONF *pWmtGenConf;
 
 #define COEX_WMT  0
@@ -1361,7 +1325,7 @@ static INT32 mt6630_set_sdio_driving(void)
 {
 	INT32 ret = 0;
 
-	unsigned long addr;
+	UINT32 addr;
 	WMT_GEN_CONF *pWmtGenConf;
 	UINT32 drv_val = 0;
 
@@ -1999,7 +1963,7 @@ static INT32
 wmt_stp_wifi_lte_coex (VOID)
 {
     INT32 iRet;
-    unsigned long addr;
+    UINT32 addr;
     WMT_GEN_CONF *pWmtGenConf;
 
     /*Get wmt config*/

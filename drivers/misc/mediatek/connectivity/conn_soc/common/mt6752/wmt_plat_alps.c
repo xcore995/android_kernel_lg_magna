@@ -89,7 +89,7 @@ CONSYS_EMI_ADDR_INFO mtk_wcn_emi_addr_info = {
 	.paged_trace_off = CONSYS_EMI_PAGED_TRACE_OFFSET,
 	.paged_dump_off = CONSYS_EMI_PAGED_DUMP_OFFSET,
 	.full_dump_off = CONSYS_EMI_FULL_DUMP_OFFSET,
-	.p_ecso = &mtk_wcn_emi_state_off,
+	.p_emi_ctrl_state_offset = &mtk_wcn_emi_state_off,
 };
 
 /*******************************************************************************
@@ -111,9 +111,7 @@ static INT32 wmt_plat_gps_lna_ctrl (ENUM_PIN_STATE state);
 
 static INT32 wmt_plat_dump_pin_conf (VOID);
 
-#if CFG_WMT_DUMP_INT_STATUS
-extern void mt_irq_dump_status(int irq);
-#endif
+
 
 /*******************************************************************************
 *                            P U B L I C   D A T A
@@ -805,7 +803,7 @@ wmt_plat_gps_lna_ctrl (
     }
     return 0;
 #else
-    WMT_PLAT_WARN_FUNC("host gps lna pin not defined!!!\n");
+    WMT_PLAT_WARN_FUNC("host gps lna pin not defined!!!\n")
     return 0;
 #endif
 }
@@ -838,7 +836,7 @@ wmt_plat_gps_lna_ctrl (
     }
     return 0;
 #else
-    WMT_PLAT_WARN_FUNC("host gps lna pin not defined!!!\n");
+    WMT_PLAT_WARN_FUNC("host gps lna pin not defined!!!\n")
     return 0;
 #endif
 }
@@ -985,12 +983,7 @@ UINT32 wmt_plat_jtag_flag_ctrl(UINT32 en)
 #if CFG_WMT_DUMP_INT_STATUS
 VOID wmt_plat_BGF_irq_dump_status(VOID)
 {
-	mt_irq_dump_status(269);
-	//WMT_PLAT_INFO_FUNC("this function is null in MT6572\n");
-}
-MTK_WCN_BOOL wmt_plat_dump_BGF_irq_status(VOID)
-{
-    return MTK_WCN_BOOL_TRUE;
+	WMT_PLAT_INFO_FUNC("this function is null in MT6572\n");
 }
 #endif
 
@@ -1132,7 +1125,6 @@ EXPORT_SYMBOL(wmt_plat_jtag_flag_ctrl);
 #endif
 #if CFG_WMT_DUMP_INT_STATUS
 EXPORT_SYMBOL(wmt_plat_BGF_irq_dump_status);
-EXPORT_SYMBOL(wmt_plat_dump_BGF_irq_status);
 #endif
 #if CONSYS_WMT_REG_SUSPEND_CB_ENABLE
 EXPORT_SYMBOL(wmt_plat_soc_osc_en_ctrl);

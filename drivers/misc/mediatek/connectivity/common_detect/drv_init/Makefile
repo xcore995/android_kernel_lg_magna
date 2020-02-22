@@ -13,12 +13,15 @@ ifneq ($(filter "MT6630",$(CONFIG_MTK_COMBO_CHIP)),)
 	obj-y += ant_drv_init.o
 endif
 	
-	ifneq ($(filter "MT6620",$(CONFIG_MTK_COMBO_CHIP)),)
+ifeq ($(CONFIG_MTK_WLAN_SUPPORT), y)
+	ccflags-y += -DMTK_WLAN_SUPPORT
+	ifneq ($(filter "MT6620",$(CONFIG_MTK_WLAN_CHIP)),)
 		ccflags-y += -DMT6620
 	endif
-	ifneq ($(filter "MT6628",$(CONFIG_MTK_COMBO_CHIP)),)
+	ifneq ($(filter "MT6628",$(CONFIG_MTK_WLAN_CHIP)),)
 		ccflags-y += -DMT6628
 	endif
+endif
 endif
 
 else

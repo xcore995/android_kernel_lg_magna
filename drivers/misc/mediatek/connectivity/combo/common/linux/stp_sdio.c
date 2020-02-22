@@ -39,14 +39,12 @@
 #include <linux/sched.h>
 #include <linux/delay.h>
 #include <linux/completion.h>
-#include <linux/time.h>
 
 #include "osal.h"
 #include "stp_exp.h"
 #include "hif_sdio.h"
 #include "stp_sdio.h"
 #include "wmt_lib.h"
-#include "wmt_exp.h"
 
 /*******************************************************************************
 *                              C O N S T A N T S
@@ -169,8 +167,6 @@ UINT32 g_stp_sdio_host_count;
 static struct proc_dir_entry *gStpSdioRxDbgEntry = NULL;
 static INT32 stp_sdio_rxdbg_cnt;
 static struct stp_sdio_rxdbg stp_sdio_rxdbg_buffer[STP_SDIO_RXDBG_COUNT];
-static struct timeval old = {0};
-#define TX_NO_ACK_TIMEOUT_ASSERT 5 /* tx no ack timeout assert, unit:second*/
 
 #if USE_NEW_PROC_FS_FLAG
 ssize_t stp_sdio_rxdbg_read(struct file *filp, char __user *buf, size_t count, loff_t *f_pos);
@@ -495,7 +491,7 @@ static INT32 stp_sdio_do_own_clr(INT32 wait)
 	    } else
                 break;
    	};
-	retry = 1200;/*wait for 1200*500 = 600 000 us*/
+	retry = 40;
 	do {
 		ret = mtk_wcn_hif_sdio_readl(clt_ctx, CHLPCR, &chlcpr_value);
 		if (ret) {
@@ -514,19 +510,6 @@ static INT32 stp_sdio_do_own_clr(INT32 wait)
 			    ("firmware ownback is no polled, wait for (%d us) and retry\n",
 			     delay_us);
 			udelay(delay_us);
-		}
-		if (0 == (retry - 1)%40)
-			STPSDIO_ERR_FUNC("own back failed in %d us, something might goes wrong\n", 40*delay_us);
-
-		if (0 == (retry - 1)%200) {
-#if COHEC_00006052
-			ret = mtk_wcn_hif_sdio_writeb(clt_ctx, (UINT32)(CHLPCR+0x1), (UINT8)(C_FW_OWN_REQ_CLR>>8));
-#else
-			ret = mtk_wcn_hif_sdio_writel(clt_ctx, CHLPCR, C_FW_OWN_REQ_CLR);
-#endif /* COHEC_00006052 */
-			if (ret)
-				STPSDIO_ERR_FUNC("request firmware own back fail(%d)\n", ret);
-			STPSDIO_ERR_FUNC("own back failed in %d us, write again\n", 200*delay_us);
 		}
 	}
 	while (retry-- > 0);
@@ -774,12 +757,6 @@ static VOID stp_sdio_tx_rx_handling(PVOID pData)
 				pInfo->awake_flag = 1;
 				own_fail_counter = 0;
 			} else {
-				if ((0 != pInfo->sleep_flag) || (0 != pInfo->wakeup_flag)) {
-					pInfo->wakeup_flag = 0;
-					pInfo->sleep_flag = 0;
-					STPSDIO_WARN_FUNC("set OWN to driver side error, but someone is wait for sleep/wakeup event, signal it to return\n");
-					osal_raise_signal(&pInfo->isr_check_complete);
-				}
 				if (0 == (own_fail_counter % 50))
 				{
 					STPSDIO_ERR_FUNC("set OWN to driver side error!\n");
@@ -1704,7 +1681,6 @@ static VOID stp_sdio_tx_wkr(
 	INT32 ret;
 	UINT32 idx;
 	MTK_WCN_STP_SDIO_PKT_BUF *pb;
-	struct timeval now;
 
 	p_info = container_of(work, MTK_WCN_STP_SDIO_HIF_INFO, tx_work);
 	ret = HIF_SDIO_ERR_SUCCESS;
@@ -1858,7 +1834,6 @@ static VOID stp_sdio_tx_wkr(
 				wake_up_interruptible(&pb->fullwait_q);
 			}
 			spin_unlock_irqrestore(&pb->rd_cnt_lock, pb->rd_irq_flag);
-			do_gettimeofday(&old);
 		} else {
 			/* tx FIFO free space < packet size, wait next time */
 #if STP_SDIO_DBG_SUPPORT && STP_SDIO_TXPERFDBG
@@ -1867,22 +1842,10 @@ static VOID stp_sdio_tx_wkr(
 			++stp_sdio_txperf_fifo_lmt_cnt;
 #endif
 
-			do_gettimeofday(&now);
-			if ((now.tv_sec - old.tv_sec) > TX_NO_ACK_TIMEOUT_ASSERT) {
-				STPSDIO_INFO_FUNC("tx_fifo_size(%d), four_byte_align_len(%d), tx_packet_num(%d)\n",
-						p_info->firmware_info.tx_fifo_size, four_byte_align_len,
-						p_info->firmware_info.tx_packet_num);
-				STPSDIO_INFO_FUNC("No ack trigger assert, tx %d seconds later\n",
-						TX_NO_ACK_TIMEOUT_ASSERT);
-				p_info->firmware_info.tx_fifo_size = STP_SDIO_TX_FIFO_SIZE;
-				if (MTK_WCN_BOOL_FALSE != pb->full_flag) {
-					pb->full_flag = MTK_WCN_BOOL_FALSE;
-					wake_up_interruptible(&pb->fullwait_q);
-				}
-				ret = mtk_wcn_wmt_assert_timeout(WMTDRV_TYPE_STP, 33, 0);
-				if (!ret)
-					STPSDIO_INFO_FUNC("trigger assert fail\n");
-			}
+			STPSDIO_DBG_FUNC
+			    ("tx_fifo_size(%d), four_byte_align_len(%d), tx_packet_num(%d)\n",
+			     p_info->firmware_info.tx_fifo_size, four_byte_align_len,
+			     p_info->firmware_info.tx_packet_num);
 			break;
 		}
 
@@ -1904,7 +1867,6 @@ static VOID stp_sdio_tx_wkr(
 	INT32 ret;
 	UINT32 idx;
 	MTK_WCN_STP_SDIO_PKT_BUF *pb;
-	struct timeval now;
 
 	p_info = container_of(work, MTK_WCN_STP_SDIO_HIF_INFO, tx_work);
 	ret = HIF_SDIO_ERR_SUCCESS;
@@ -2037,7 +1999,6 @@ static VOID stp_sdio_tx_wkr(
 			}
 			spin_unlock_irqrestore(&p_info->pkt_buf.rd_idx_lock,
 					       p_info->pkt_buf.rd_irq_flag);
-			do_gettimeofday(&old);
 		} else {
 #if STP_SDIO_DBG_SUPPORT && STP_SDIO_TXPERFDBG
 			stp_sdio_txperf_fifo_left += p_info->firmware_info.tx_fifo_size;
@@ -2045,22 +2006,10 @@ static VOID stp_sdio_tx_wkr(
 			++stp_sdio_txperf_fifo_lmt_cnt;
 #endif
 			/* (tx FIFO free space < packet size) or (the number of tx packets >= 7) */
-			do_gettimeofday(&now);
-			if ((now.tv_sec - old.tv_sec) > TX_NO_ACK_TIMEOUT_ASSERT) {
-				STPSDIO_INFO_FUNC("tx_fifo_size(%d), four_byte_align_len(%d), tx_packet_num(%d)\n",
-						p_info->firmware_info.tx_fifo_size, four_byte_align_len,
-						p_info->firmware_info.tx_packet_num);
-				STPSDIO_INFO_FUNC("No ack trigger assert, tx %d seconds later\n",
-						TX_NO_ACK_TIMEOUT_ASSERT);
-				p_info->firmware_info.tx_fifo_size = STP_SDIO_TX_FIFO_SIZE;
-				if (MTK_WCN_BOOL_FALSE != pb->full_flag) {
-					pb->full_flag = MTK_WCN_BOOL_FALSE;
-					wake_up_interruptible(&pb->fullwait_q);
-				}
-				ret = mtk_wcn_wmt_assert_timeout(WMTDRV_TYPE_STP, 33, 0);
-				if (!ret)
-					STPSDIO_INFO_FUNC("trigger assert fail\n");
-			}
+			STPSDIO_DBG_FUNC
+			    ("tx_fifo_size(%d), four_byte_align_len(%d), tx_packet_num(%d)\n",
+			     p_info->firmware_info.tx_fifo_size, four_byte_align_len,
+			     p_info->firmware_info.tx_packet_num);
 			break;
 		}
 
@@ -2509,8 +2458,13 @@ stp_sdio_probe(const MTK_WCN_HIF_SDIO_CLTCTX clt_ctx,
 		     "stp_sdio_tx_rx", osal_sizeof(g_stp_sdio_host_info.tx_rx_thread.threadName));
 	ret = osal_thread_create(&g_stp_sdio_host_info.tx_rx_thread);
 	if (ret < 0) {
-		STPSDIO_ERR_FUNC("osal_thread_create fail...: %p\n", g_stp_sdio_host_info.tx_rx_thread.pThread);
-		return ret;
+		STPSDIO_ERR_FUNC("osal_thread_create fail...\n");
+		goto out;
+	}
+	ret = osal_thread_run(&g_stp_sdio_host_info.tx_rx_thread);
+	if (ret < 0) {
+		STPSDIO_ERR_FUNC("osal_thread_run fail...\n");
+		goto out;
 	}
 #else
 	/* init tx_tasklet and rx work_queue */
@@ -2582,16 +2536,8 @@ using CMD52 write instead of CMD53 write for CCIR, CHLPCR, CSDIOCSR */
 
 	STPSDIO_DBG_FUNC("enable interrupt done\n");
 
-#if STP_SDIO_OWN_THREAD
-	ret = osal_thread_run(&g_stp_sdio_host_info.tx_rx_thread);
-	if (ret < 0) {
-		STPSDIO_ERR_FUNC("osal_thread_run fail...\n");
-		goto out;
-	}
-#endif
-
 	/* 4 <5> register mtk_wcn_stp_if_tx() to stp driver */
-	mtk_wcn_stp_register_if_tx(STP_SDIO_IF_TX, (MTK_WCN_STP_IF_TX)stp_sdio_tx);
+	mtk_wcn_stp_register_if_tx(STP_SDIO_IF_TX, stp_sdio_tx);
 
 #if 0				/* controlled by 6620_launcher & WMT */
 	/*set STP sdio mode */
@@ -2607,11 +2553,7 @@ using CMD52 write instead of CMD53 write for CCIR, CHLPCR, CSDIOCSR */
 	/* 4 <6> error handling */
 	/* TODO: error handling */
 	if (ret) {
-#if STP_SDIO_OWN_THREAD
-		osal_thread_destroy(&g_stp_sdio_host_info.tx_rx_thread);
-#endif
-		if (g_stp_sdio_host_count > 0)
-			--g_stp_sdio_host_count;
+		--g_stp_sdio_host_count;
 	}
 	return ret;
 }
@@ -2640,8 +2582,7 @@ static INT32 stp_sdio_remove(const MTK_WCN_HIF_SDIO_CLTCTX clt_ctx)
 		STPSDIO_ERR_FUNC("sdio_cltctx(%d) not found\n", clt_ctx);
 		return -1;
 	}
-	if (g_stp_sdio_host_count > 0)
-		--g_stp_sdio_host_count;
+    --g_stp_sdio_host_count;
 	/* 4 <0> disable irq flag in HIF-SDIO */
 	mtk_wcn_hif_sdio_enable_irq(clt_ctx, MTK_WCN_BOOL_FALSE);
 	/* 4 <1> unregister if_tx() function */
@@ -2921,57 +2862,60 @@ static VOID stp_sdio_txdbg_dump(VOID)
 		idx = (stp_sdio_txdbg_cnt - 1 - i) & STP_SDIO_TXDBG_COUNT_MASK;
 		len = stp_sdio_txdbg_buffer[idx].bus_txlen;
 		if (0 == len) {
-			STPSDIO_INFO_FUNC("idx(%x) 0 == len dump skip\n", idx);
+			pr_warn(KERN_INFO DFT_TAG "idx(%x) 0 == len dump skip\n", idx);
 			continue;
 		}
 
 		len = len > STP_SDIO_TXDBG_MAX_SIZE ? STP_SDIO_TXDBG_MAX_SIZE : len;
-		STPSDIO_INFO_FUNC(
-				"stp_sdio_txdbg_buffer idx(%x) bus_txlen(0x%x, %d) ts(%d)\n", idx, len, len,
+		pr_warn(KERN_INFO DFT_TAG
+			"stp_sdio_txdbg_buffer idx(%x) bus_txlen(0x%x, %d) ts(%d)\n", idx, len, len,
 			stp_sdio_txdbg_buffer[idx].ts);
 		for (j = 0; j < STP_SDIO_TX_ENTRY_SIZE && j < len; j += 16) {
 			pbuf = &stp_sdio_txdbg_buffer[idx].tx_pkt_buf[j];
-			STPSDIO_INFO_FUNC(
+			pr_warn(KERN_INFO DFT_TAG
 				"[0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x   0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x]\n",
 				pbuf[0], pbuf[1], pbuf[2], pbuf[3], pbuf[4], pbuf[5], pbuf[6],
 				pbuf[7], pbuf[8], pbuf[9], pbuf[10], pbuf[11], pbuf[12], pbuf[13],
 				pbuf[14], pbuf[15]);
 			msleep(10);
 		}
-		STPSDIO_INFO_FUNC("stp_sdio_txdbg_buffer dump ok\n");
+		pr_warn(KERN_INFO DFT_TAG "stp_sdio_txdbg_buffer dump ok\n");
 	}
 
 	for (i = 0; i < STP_SDIO_TXDBG_COUNT; ++i) {
 		idx = (stp_sdio_txdbg_cnt - 1 - i) & STP_SDIO_TXDBG_COUNT_MASK;
 		len = stp_sdio_txdbg_buffer[idx].bus_txlen;
-		STPSDIO_INFO_FUNC(
+		pr_warn(KERN_INFO DFT_TAG
 			"stp_sdio_txdbg_buffer idx(%x) bus_txlen(0x%x, %d) ts(%d)\n", idx, len, len,
 			stp_sdio_txdbg_buffer[idx].ts);
 	}
-	STPSDIO_INFO_FUNC(
-			"Dump tx info: pkt_num(%d) fifo(%d) pkt_list.rd(0x%x, %ld) pkt_list.wr(0x%x, %ld)\n",
-			gp_info->firmware_info.tx_packet_num, gp_info->firmware_info.tx_fifo_size,
-			gp_info->tx_pkt_list.pkt_rd_cnt,
-			STP_SDIO_GET_PKT_AR_IDX(gp_info->tx_pkt_list.pkt_rd_cnt),
-			gp_info->tx_pkt_list.pkt_wr_cnt,
-			STP_SDIO_GET_PKT_AR_IDX(gp_info->tx_pkt_list.pkt_wr_cnt));
+
+	pr_warn(KERN_INFO DFT_TAG
+		"Dump tx info: pkt_num(%d) fifo(%d) pkt_list.rd(0x%x, %ld) pkt_list.wr(0x%x, %ld)\n",
+		gp_info->firmware_info.tx_packet_num, gp_info->firmware_info.tx_fifo_size,
+		gp_info->tx_pkt_list.pkt_rd_cnt,
+		STP_SDIO_GET_PKT_AR_IDX(gp_info->tx_pkt_list.pkt_rd_cnt),
+		gp_info->tx_pkt_list.pkt_wr_cnt,
+		STP_SDIO_GET_PKT_AR_IDX(gp_info->tx_pkt_list.pkt_wr_cnt)
+	    );
 
 	for (i = 0; i < STP_SDIO_TX_PKT_LIST_SIZE; ++i) {
 		idx = STP_SDIO_GET_PKT_AR_IDX(gp_info->tx_pkt_list.pkt_wr_cnt - 1 - i);
-		STPSDIO_INFO_FUNC(
-				"tx_pkt_list idx(0x%x, %d) size(0x%x, %d), in_ts(%d), out_ts(%d)\n",
-				(gp_info->tx_pkt_list.pkt_wr_cnt - 1 - i), idx,
-				gp_info->tx_pkt_list.pkt_size_list[idx],
-				gp_info->tx_pkt_list.pkt_size_list[idx], gp_info->tx_pkt_list.in_ts[idx],
-				gp_info->tx_pkt_list.out_ts[idx]);
+		pr_warn(KERN_INFO DFT_TAG
+			"tx_pkt_list idx(0x%x, %d) size(0x%x, %d), in_ts(%d), out_ts(%d)\n",
+			(gp_info->tx_pkt_list.pkt_wr_cnt - 1 - i), idx,
+			gp_info->tx_pkt_list.pkt_size_list[idx],
+			gp_info->tx_pkt_list.pkt_size_list[idx], gp_info->tx_pkt_list.in_ts[idx],
+			gp_info->tx_pkt_list.out_ts[idx]
+		    );
 	}
 
 #if STP_SDIO_NEW_TXRING
-	STPSDIO_INFO_FUNC("\n\ndump pkt_buf.tx_buf: rd(%d) wr(%d) full(%d)\n",
-			gp_info->pkt_buf.rd_cnt, gp_info->pkt_buf.wr_cnt, gp_info->pkt_buf.full_flag);
+	pr_warn(KERN_INFO DFT_TAG "\n\ndump pkt_buf.tx_buf: rd(%d) wr(%d) full(%d)\n",
+		gp_info->pkt_buf.rd_cnt, gp_info->pkt_buf.wr_cnt, gp_info->pkt_buf.full_flag);
 #else
-	STPSDIO_INFO_FUNC("\n\ndump pkt_buf.tx_buf: rdi(%d) wri(%d) full(%d)\n",
-			gp_info->pkt_buf.rd_idx, gp_info->pkt_buf.wr_idx, gp_info->pkt_buf.full_flag);
+	pr_warn(KERN_INFO DFT_TAG "\n\ndump pkt_buf.tx_buf: rdi(%d) wri(%d) full(%d)\n",
+		gp_info->pkt_buf.rd_idx, gp_info->pkt_buf.wr_idx, gp_info->pkt_buf.full_flag);
 #endif
 
 	for (i = 0; i < STP_SDIO_TX_BUF_CNT; ++i) {
@@ -2989,10 +2933,9 @@ static VOID stp_sdio_txdbg_dump(VOID)
 #endif
 
 #endif
-		STPSDIO_INFO_FUNC("pkt_buf.tx_buf idx(%x) ts(%d) len(%d)\n",
-				idx, gp_info->pkt_buf.tx_buf_ts[idx], len);
-		if (0 == len) {
-			STPSDIO_INFO_FUNC("idx(%x) 0 == len dump skip\n", idx);
+        printk(KERN_INFO DFT_TAG"pkt_buf.tx_buf idx(%x) ts(%d) len(%d)\n", idx, gp_info->pkt_buf.tx_buf_ts[idx], len);
+        if (0 == len) {
+            printk(KERN_ERR DFT_TAG"idx(%x) 0 == len dump skip\n", idx);
 			continue;
         }
 		len = len > STP_SDIO_TXDBG_MAX_SIZE ? STP_SDIO_TXDBG_MAX_SIZE : len;
@@ -3002,14 +2945,14 @@ static VOID stp_sdio_txdbg_dump(VOID)
 #else
 			pbuf = &gp_info->pkt_buf.tx_buf[idx][j];
 #endif
-			STPSDIO_INFO_FUNC(
-					"[0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x   0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x]\n",
-					pbuf[0], pbuf[1], pbuf[2], pbuf[3], pbuf[4], pbuf[5], pbuf[6],
-					pbuf[7], pbuf[8], pbuf[9], pbuf[10], pbuf[11], pbuf[12], pbuf[13],
-					pbuf[14], pbuf[15]);
+			pr_warn(KERN_ERR DFT_TAG
+				"[0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x   0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x]\n",
+				pbuf[0], pbuf[1], pbuf[2], pbuf[3], pbuf[4], pbuf[5], pbuf[6],
+				pbuf[7], pbuf[8], pbuf[9], pbuf[10], pbuf[11], pbuf[12], pbuf[13],
+				pbuf[14], pbuf[15]);
 			msleep(10);
 		}
-		STPSDIO_INFO_FUNC("pkt_buf.tx_buf dump ok\n");
+		pr_warn(KERN_ERR DFT_TAG "pkt_buf.tx_buf dump ok\n");
 	}
 #endif				/* end of STP_SDIO_TXDBG */
 }

@@ -75,54 +75,41 @@
 
 #define RB_SIZE(prb) ((prb)->size)
 #define RB_MASK(prb) (RB_SIZE(prb) - 1)
-#define RB_LATEST(prb) ((prb)->write - 1)
 #define RB_COUNT(prb) ((prb)->write - (prb)->read)
 #define RB_FULL(prb) (RB_COUNT(prb) >= RB_SIZE(prb))
 #define RB_EMPTY(prb) ((prb)->write == (prb)->read)
 
 #define RB_INIT(prb, qsize) \
-do { \
-	(prb)->read = (prb)->write = 0; \
-	(prb)->size = (qsize); \
-} while (0)
+   { \
+   (prb)->read = (prb)->write = 0; \
+   (prb)->size = (qsize); \
+   }
 
 #define RB_PUT(prb, value) \
-do { \
-	if (!RB_FULL(prb)) { \
-		(prb)->queue[(prb)->write & RB_MASK(prb)] = value; \
-		++((prb)->write); \
-	} \
-	else { \
-		osal_assert(!RB_FULL(prb)); \
-	} \
-} while (0)
+{ \
+    if (!RB_FULL(prb)) { \
+	(prb)->queue[(prb)->write & RB_MASK(prb)] = value; \
+	++((prb)->write); \
+    } \
+    else { \
+	osal_assert(!RB_FULL(prb)); \
+    } \
+}
 
 #define RB_GET(prb, value) \
-do { \
-	if (!RB_EMPTY(prb)) { \
-		value = (prb)->queue[(prb)->read & RB_MASK(prb)]; \
-		++((prb)->read); \
-		if (RB_EMPTY(prb)) { \
-			(prb)->read = (prb)->write = 0; \
-		} \
+{ \
+    if (!RB_EMPTY(prb)) { \
+	value = (prb)->queue[(prb)->read & RB_MASK(prb)]; \
+	++((prb)->read); \
+	if (RB_EMPTY(prb)) { \
+	    (prb)->read = (prb)->write = 0; \
 	} \
-	else { \
-		value = NULL; \
-	} \
-} while (0)
+    } \
+    else { \
+	value = NULL; \
+    } \
+}
 
-#define RB_GET_LATEST(prb, value) \
-do { \
-	if (!RB_EMPTY(prb)) { \
-		value = (prb)->queue[RB_LATEST(prb) & RB_MASK(prb)]; \
-		if (RB_EMPTY(prb)) { \
-			(prb)->read = (prb)->write = 0; \
-		} \
-	} \
-	else { \
-		value = NULL; \
-	} \
-} while (0)
 /*******************************************************************************
 *                    E X T E R N A L   R E F E R E N C E S
 ********************************************************************************
@@ -142,7 +129,7 @@ do { \
 
 
 
-typedef VOID(*P_TIMEOUT_HANDLER) (unsigned long);
+typedef VOID(*P_TIMEOUT_HANDLER) (UINT32);
 typedef INT32(*P_COND) (VOID *);
 
 typedef struct _OSAL_TIMER_ {
@@ -153,7 +140,7 @@ typedef struct _OSAL_TIMER_ {
 
 typedef struct _OSAL_UNSLEEPABLE_LOCK_ {
 	spinlock_t lock;
-	unsigned long flag;
+	UINT32 flag;
 } OSAL_UNSLEEPABLE_LOCK, *P_OSAL_UNSLEEPABLE_LOCK;
 
 typedef struct _OSAL_SLEEPABLE_LOCK_ {
