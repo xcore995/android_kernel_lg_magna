@@ -225,8 +225,8 @@ static void WqTouchIrqHandler(struct work_struct *work_irq)
 	{
 		/* Send Proper Event to CFW */
 		send_uevent_lpwg(pDriverData->client, LPWG_DOUBLE_TAP);
-		input_report_key(pDriverData->input_dev, KEY_WAKEUP, BUTTON_PRESSED);
- 		input_report_key(pDriverData->input_dev, KEY_WAKEUP, BUTTON_RELEASED);
+		input_report_key(pDriverData->input_dev, KEY_POWER, BUTTON_PRESSED);
+ 		input_report_key(pDriverData->input_dev, KEY_POWER, BUTTON_RELEASED);
  		input_sync(pDriverData->input_dev);
 	}
 	else if( pDriverData->readData.type == T_DATA_KNOCK_CODE )
@@ -973,7 +973,7 @@ static int register_input_dev(struct lge_touch_data *pDriverData)
 	set_bit(EV_SYN, pDriverData->input_dev->evbit);
 	set_bit(EV_ABS, pDriverData->input_dev->evbit);
 	set_bit(EV_KEY, pDriverData->input_dev->evbit);
- 	set_bit(KEY_WAKEUP, pDriverData->input_dev->keybit);
+ 	set_bit(KEY_POWER, pDriverData->input_dev->keybit);
 	set_bit(INPUT_PROP_DIRECT, pDriverData->input_dev->propbit);
 
 	input_set_abs_params(pDriverData->input_dev, ABS_MT_POSITION_X, 0, pDriverData->mConfig.max_x, 0, 0);
