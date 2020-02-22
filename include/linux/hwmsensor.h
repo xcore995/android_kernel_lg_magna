@@ -287,7 +287,7 @@ typedef struct {
 }hwm_sensor_data;
 typedef struct{
         hwm_sensor_data data[MAX_ANDROID_SENSOR_NUM];
-	uint64_t data_type;
+	int date_type;
 } hwm_trans_data;
 
 
