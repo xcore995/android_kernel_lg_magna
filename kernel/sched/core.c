@@ -4177,13 +4177,6 @@ recheck:
 			return -EINVAL;
 	}
 
-	if (rt_policy(policy)) {
-		if (!check_mt_allow_rt((struct sched_param *)param)) {
-			pr_warn("[RT_MONITOR]WARNNING [%d:%s] SET NOT ALLOW RT Prio [%d] for proc [%d:%s]\n", current->pid, current->comm, param->sched_priority, p->pid, p->comm);
-			/* dump_stack(); */
-		}
-	}
-
 	/*
 	 * Valid priorities for SCHED_FIFO and SCHED_RR are
 	 * 1..MAX_USER_RT_PRIO-1, valid priority for SCHED_NORMAL,

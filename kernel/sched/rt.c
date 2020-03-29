@@ -1091,38 +1091,26 @@ static int sched_rt_runtime_exceeded(struct rt_rq *rt_rq)
 
 	if (rt_rq->rt_time > runtime) {
 		struct rt_bandwidth *rt_b = sched_rt_bandwidth(rt_rq);
-		int cpu = rq_cpu(rt_rq->rq);
 
-		printk_deferred("sched: cpu=%d rt_time %llu <-> runtime"
-				" [%llu -> %llu], exec_task[%d:%s], prio=%d, exec_delta_time[%llu]"
-				", clock_task[%llu], exec_start[%llu]\n",
-				cpu, rt_rq->rt_time, runtime_pre, runtime,
-				per_cpu(exec_task, cpu).pid,
-				per_cpu(exec_task, cpu).comm,
-				per_cpu(exec_task, cpu).prio,
-				per_cpu(exec_delta_time, cpu),
-				per_cpu(clock_task, cpu), per_cpu(exec_start, cpu));
 		/*
 		 * Don't actually throttle groups that have no runtime assigned
 		 * but accrue some time due to boosting.
 		 */
 		/* MTK patch: print rt throttle everytime */
 		if (likely(rt_b->rt_runtime)) {
-			/* static bool once = false; */
+			static bool once = false;
 
 			rt_rq->rt_throttled = 1;
 
-			/* if (!once) { */
-			/* once = true; */
-			printk_deferred("sched: RT throttling activated cpu=%d\n", cpu);
-			/* } */
-			mt_sched_printf(sched_rt_info, "cpu=%d rt_throttled=%d",
-					cpu, rt_rq->rt_throttled);
+			if (!once) {
+				once = true;
+				printk_deferred("sched: RT throttling activated\n");
 #ifdef CONFIG_MTPROF
 			/* sched:rt throttle monitor */
 			mt_rt_mon_switch(MON_STOP);
 			mt_rt_mon_print_task();
 #endif
+			}
 		} else {
 			/*
 			 * In case we did anyway, make it go away,

@@ -1678,7 +1678,7 @@ static int mmc_blk_err_check(struct mmc_card *card,
 	if (brq->cmd.resp[0] & CMD_ERRORS) {
 		pr_err("%s: r/w command failed, status = %#x\n",
 		       req->rq_disk->disk_name, brq->cmd.resp[0]);
-		return MMC_BLK_ABORT;
+		//return MMC_BLK_ABORT;
 	}
 
 	/*

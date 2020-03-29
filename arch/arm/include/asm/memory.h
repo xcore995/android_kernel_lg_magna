@@ -158,7 +158,7 @@
 #define __PV_BITS_31_24	0x81000000
 
 extern unsigned long __pv_phys_offset;
-#define PHYS_OFFSET __pv_phys_offset
+//#define PHYS_OFFSET __pv_phys_offset
 
 #define __pv_stub(from,to,instr,type)			\
 	__asm__("@ __pv_stub\n"				\
