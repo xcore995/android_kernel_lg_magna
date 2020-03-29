@@ -92,34 +92,11 @@ static int check_all_minfree(void *param, void *param2)
 
 static unsigned int get_max_safe_size(pid_t pid)
 {
-	extern int get_min_free_pages(pid_t pid);
-	extern int query_lmk_minfree(int index);
-
-	unsigned int all_free_pages;
-
-	unsigned int lmk_pages;
-
-	unsigned int lowBoundPages = get_min_free_pages(pid);
-
-	unsigned int max_safe_size;
-
-	lmk_pages = query_lmk_minfree(0);
-
-
-	all_free_pages = global_page_state(NR_FREE_PAGES) +
-	    global_page_state(NR_FILE_PAGES) + global_page_state(NR_FILE_DIRTY);
-
-
-	if (all_free_pages >= (lowBoundPages + lmk_pages))
-		max_safe_size = (all_free_pages - lowBoundPages - lmk_pages) * PAGE_SIZE;
-	else if (all_free_pages >= (lowBoundPages))
-		max_safe_size = (all_free_pages - lowBoundPages) * PAGE_SIZE;
-	else
+	
 		return 0;
 
 
 
-	return max_safe_size;
 
 }
 
