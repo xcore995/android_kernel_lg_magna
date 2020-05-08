@@ -38,10 +38,6 @@
 #define CREATE_TRACE_POINTS
 #include <trace/events/filemap.h>
 
-#ifdef CONFIG_LGE_SREADAHEAD
-#include "../fs/sreadahead_prof.h"
-#endif
-
 /*
  * FIXME: remove all knowledge of the buffer layer from the core VM
  */
@@ -719,7 +715,8 @@ int __lock_page_or_retry(struct page *page, struct mm_struct *mm,
  * Is there a pagecache struct page at the given (mapping, offset) tuple?
  * If yes, increment its refcount and return it; if no, return NULL.
  */
-struct page *find_get_page(struct address_space *mapping, pgoff_t offset)
+struct page *find_get_page_flags(struct address_space *mapping, pgoff_t offset,
+				 int fgp_flags)
 {
 	void **pagep;
 	struct page *page;
@@ -756,6 +753,8 @@ repeat:
 		}
 	}
 out:
+	if (page && (fgp_flags & FGP_ACCESSED))
+		mark_page_accessed(page);
 	rcu_read_unlock();
 
 	return page;
@@ -1592,11 +1591,7 @@ static void do_sync_mmap_readahead(struct vm_area_struct *vma,
 	/*
 	 * mmap read-around
 	 */
-	#ifdef CONFIG_READAHEAD_MMAP_SIZE_ENABLE
-	ra_pages = CONFIG_READAHEAD_MMAP_PAGE_CNT;
-	#else
 	ra_pages = max_sane_readahead(ra->ra_pages);
-	#endif
 	ra->start = max_t(long, 0, offset - ra_pages / 2);
 	ra->size = ra_pages;
 	ra->async_size = ra_pages / 4;
@@ -1671,17 +1666,6 @@ int filemap_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
 #endif
 		count_vm_event(PGFMFAULT);
 		count_vm_event(PGMAJFAULT);
-		/* LGE_CHANGE_S
-		*
-		* Profile files related to pgmajfault during 1st booting
-		* in order to use the data as readahead args
-		*
-		* matia.kim@lge.com 20130612
-		*/
-#ifdef CONFIG_LGE_SREADAHEAD
-		sreadahead_prof(file, 0, 0);
-#endif
-		/* LGE_CHANGE_E */
 		mem_cgroup_count_vm_event(vma->vm_mm, PGMAJFAULT);
 		ret = VM_FAULT_MAJOR;
 retry_find:
